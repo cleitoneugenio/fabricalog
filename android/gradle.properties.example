@@ -1,0 +1,12 @@
+# Copie este arquivo para gradle.properties e preencha com os valores reais.
+# gradle.properties NÃO deve ser commitado (está no .gitignore).
+
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+android.useAndroidX=true
+android.enableJetifier=true
+
+# Signing — APK release
+RELEASE_STORE_FILE=fabricalog-release.keystore
+RELEASE_STORE_PASSWORD=
+RELEASE_KEY_ALIAS=fabricalog
+RELEASE_KEY_PASSWORD=

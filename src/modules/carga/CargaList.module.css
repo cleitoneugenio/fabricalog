@@ -1,0 +1,420 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 80px;
+}
+
+/* ── Date bar ── */
+.dateBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dateArrow {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  flex-shrink: 0;
+  transition: color 0.15s, border-color 0.15s;
+}
+.dateArrow:hover:not(:disabled) { color: var(--text); border-color: var(--border-mid); }
+.dateArrow:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.dateCenter {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.dateLabel {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.dateTodayBtn {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: none;
+  border-radius: 99px;
+  padding: 2px 8px;
+  font-family: var(--font);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── Summary row ── */
+.summary {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.summaryRowDest {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.summaryVal {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.summaryLbl {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.summaryDivider {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+}
+
+/* ── Cards ── */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card {
+  width: 100%;
+  text-align: left;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-family: var(--font);
+}
+
+.card:hover {
+  border-color: var(--border-mid);
+  background: oklch(20% 0.02 38);
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cardNome {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tipoPill {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 99px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.tipoPillEmpresa {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid oklch(65% 0.19 38 / 0.3);
+}
+
+.tipoPillExterno {
+  background: oklch(76% 0.17 68 / 0.12);
+  color: var(--warning);
+  border: 1px solid oklch(76% 0.17 68 / 0.3);
+}
+
+.cardMid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardHora {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.cardDuracao {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.cardQtd {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+}
+
+.cardObs {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.4;
+  margin: 2px 0 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* ── Empty state ── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 64px 0;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.emptySub {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+/* ── FAB ── */
+.fab {
+  position: fixed;
+  bottom: calc(var(--nav-h) + 16px);
+  right: 20px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: oklch(10% 0.014 38);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px oklch(65% 0.19 38 / 0.35);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  z-index: 50;
+}
+
+.fab:hover {
+  transform: scale(1.06);
+  box-shadow: 0 6px 24px oklch(65% 0.19 38 / 0.45);
+}
+
+.fab:active { transform: scale(0.96); }
+
+@media (min-width: 768px) {
+  .fab { bottom: 24px; }
+}
+
+/* ── Form ── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tipoGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tipoLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.tipoBtns {
+  display: flex;
+  gap: 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.tipoBtn {
+  flex: 1;
+  padding: 9px 4px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font);
+  background: oklch(15% 0.016 38);
+  color: var(--text-dim);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tipoBtn + .tipoBtn {
+  border-left: 1px solid var(--border);
+}
+
+.tipoBtnEmpresa {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.tipoBtnExterno {
+  background: oklch(76% 0.17 68 / 0.12);
+  color: var(--warning);
+}
+
+/* ── Destino (empresa) ── */
+.destinoGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.destinoBtns {
+  display: flex;
+  gap: 8px;
+}
+
+.destinoBtn {
+  flex: 1;
+  padding: 10px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font);
+  background: oklch(15% 0.016 38);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  text-align: center;
+}
+
+.destinoBtnActive {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: oklch(65% 0.19 38 / 0.4);
+}
+
+/* pill de destino no card */
+.cardPills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Destino: venda — laranja (=accent, igual gradVendas no BarChart) */
+.tipoPillDest_venda {
+  background: oklch(65% 0.19 38 / 0.14);
+  color: var(--accent);
+  border: 1px solid oklch(65% 0.19 38 / 0.35);
+}
+
+/* Destino: estoque — verde (=success, igual gradEstoque no BarChart) */
+.tipoPillDest_estoque {
+  background: oklch(68% 0.16 148 / 0.14);
+  color: var(--success);
+  border: 1px solid oklch(68% 0.16 148 / 0.35);
+}
+
+/* Destino: galpão — azul (=gradCaminhoes no BarChart) */
+.tipoPillDest_galpao {
+  background: oklch(65% 0.17 260 / 0.14);
+  color: oklch(72% 0.15 260);
+  border: 1px solid oklch(65% 0.17 260 / 0.35);
+}
+
+.duracaoDisplay {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: oklch(68% 0.16 148 / 0.1);
+  border: 1px solid oklch(68% 0.16 148 / 0.25);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+}
+
+.duracaoLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.duracaoVal {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--success);
+  letter-spacing: -0.02em;
+}

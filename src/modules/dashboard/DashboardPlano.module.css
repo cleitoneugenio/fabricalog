@@ -1,0 +1,249 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Progress card ── */
+.progressCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progressLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.progressMeta {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.progressNumbers {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.progressDone {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  line-height: 1;
+}
+
+.progressOf {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.progressPct {
+  margin-left: auto;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-dim);
+}
+
+.progressBarWrap {
+  height: 6px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.progressStatus {
+  font-size: 12px;
+  color: var(--text-dim);
+  min-height: 16px;
+}
+
+/* ── Today callout ── */
+.todayCard {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.todayLeft {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.todayBadge {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.todayLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.todayAdjust {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.todayRight {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.todayNum {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  line-height: 1;
+}
+
+.todayUnit {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+/* ── Days grid ── */
+.daysGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.dayCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dayCardToday {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.dayCardMissed {
+  border-color: oklch(76% 0.17 68 / 0.45);
+  background: oklch(76% 0.17 68 / 0.05);
+}
+
+.dayCardOk {
+  border-color: oklch(68% 0.16 148 / 0.35);
+  background: oklch(68% 0.16 148 / 0.05);
+}
+
+.dayTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.dayName {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.todayTag {
+  font-size: 9px;
+  font-weight: 700;
+  background: var(--accent);
+  color: oklch(10% 0.014 38);
+  padding: 1px 6px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.statusOk {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--success);
+}
+
+.statusMiss {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--warning);
+}
+
+.dayNum {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  line-height: 1;
+}
+
+.daySub {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 600;
+  min-height: 15px;
+}
+
+.milheiroRow {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+.milheiroVal {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.milheiroMeta {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
