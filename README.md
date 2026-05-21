@@ -1,8 +1,10 @@
 # FabricaLog
 
-Aplicativo de gestão de produção para o **Forno CEDAN** — Cruz, CE.
+> Gestão de produção de cerâmica — do forno ao bolso do funcionário.
 
-Substitui duas planilhas Excel usadas pelo gerente de produção: controle semanal de fornos e ponto de funcionários.
+O **Forno CEDAN**, em Cruz-CE, produzia tijolos há anos com controle feito em duas planilhas Excel. Funcionava, mas limitava. Nenhuma visibilidade em tempo real, nenhum histórico acessível no celular, nada sincronizado entre dispositivos.
+
+O FabricaLog foi construído para resolver isso. Um aplicativo mobile-first que cobre todo o ciclo operacional de uma cerâmica: semanas de produção, controle de fornos, registro de carregamentos, ponto de funcionários e geração de recibos — tudo offline, com sincronização automática em nuvem quando há conexão.
 
 ---
 
