@@ -1,10 +1,14 @@
 # FabricaLog
 
-> Gestão de produção de cerâmica — do forno ao bolso do funcionário.
+> Do chão de fábrica para o código — e de volta pro chão de fábrica.
 
-O **Forno CEDAN**, em Cruz-CE, produzia tijolos há anos com controle feito em duas planilhas Excel. Funcionava, mas limitava. Nenhuma visibilidade em tempo real, nenhum histórico acessível no celular, nada sincronizado entre dispositivos.
+O ponto de partida eram duas planilhas Excel e uma mesa cheia de papel. Uma controlava a produção semanal da cerâmica — queima, enforna, qualidade, estoque, vendas. A outra controlava o ponto dos 22 funcionários — valor diário, faltas, bônus de assiduidade, total a pagar. Era o sistema. Funcionava. Até que a fábrica cresceu e a planilha começou a mostrar o limite dela.
 
-O FabricaLog foi construído para resolver isso. Um aplicativo mobile-first que cobre todo o ciclo operacional de uma cerâmica: semanas de produção, controle de fornos, registro de carregamentos, ponto de funcionários e geração de recibos — tudo offline, com sincronização automática em nuvem quando há conexão.
+O problema não era o Excel em si. Era que o gerente precisava registrar dados em tempo real no meio do turno, no celular, sem internet estável. Planilha no celular não foi feita pra isso. Você perde campo, fecha sem salvar, não consegue visualizar o que importa quando está no meio da operação.
+
+O FabricaLog nasceu dessa restrição. Um aplicativo que roda offline, pesa 5 MB, cabe em qualquer Android de fábrica e cobre todo o ciclo operacional de uma cerâmica: produção semanal, controle de fornos, carregamentos, ponto com remuneração variável automatizada, recibos em PDF e dashboards com exportação para gestão — tudo funcionando sem depender de servidor externo, sincronizando com a nuvem em silêncio quando a conexão aparece.
+
+Problema real com restrição real gera solução real.
 
 ---
 
