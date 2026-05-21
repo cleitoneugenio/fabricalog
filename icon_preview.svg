@@ -1,0 +1,28 @@
+<svg width="108" height="108" viewBox="0 0 108 108" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="108" height="108" fill="#1E1410"/>
+
+  <!-- Monitor body -->
+  <path d="M33.5,34 H73.5 Q79,34 79,39.5 V68.5 Q79,74 73.5,74 H33.5 Q28,74 28,68.5 V39.5 Q28,34 33.5,34 Z"
+        fill="#241912"/>
+
+  <!-- Green indicator dot -->
+  <path d="M31.7,39 a2.3,2.3 0 1,0 4.6,0 a2.3,2.3 0 1,0 -4.6,0" fill="#40B860"/>
+
+  <!-- Chimney tower -->
+  <path d="M58.5,45 H62.1 Q62.6,45 62.6,45.5 V56 H58 V45.5 Q58,45 58.5,45 Z" fill="#C85C1A"/>
+
+  <!-- Dark cap on chimney -->
+  <path d="M57.7,43 a2.3,2.3 0 1,0 4.6,0 a2.3,2.3 0 1,0 -4.6,0" fill="#3D2C22" opacity="0.6"/>
+
+  <!-- Orange furnace bar -->
+  <path d="M29.4,56 H66.6 Q68,56 68,57.4 V67.6 Q68,69 66.6,69 H29.4 Q28,69 28,67.6 V57.4 Q28,56 29.4,56 Z"
+        fill="#C85C1A"/>
+
+  <!-- Darker left chamber -->
+  <path d="M29,60 H43 V69 H29 Q28,69 28,68 V61 Q28,60 29,60 Z" fill="#A84C16"/>
+
+  <!-- Bottom detail -->
+  <path d="M52.5,65 H59.5 Q60,65 60,65.5 V68.5 Q60,69 59.5,69 H52.5 Q52,69 52,68.5 V65.5 Q52,65 52.5,65 Z"
+        fill="#B05218"/>
+</svg>

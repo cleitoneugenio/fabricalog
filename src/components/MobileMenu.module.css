@@ -1,0 +1,103 @@
+/* Só aparece no mobile */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 20px;
+  margin-bottom: 4px;
+}
+
+@media (min-width: 768px) {
+  .header { display: none; }
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logoText {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.menuBtn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+/* Bottom sheet */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: oklch(0% 0 0 / 0.6);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+}
+
+.sheet {
+  width: 100%;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 12px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: slideUp 0.2s ease;
+}
+
+.sheetHandle {
+  width: 36px;
+  height: 4px;
+  background: var(--border-mid);
+  border-radius: 99px;
+  margin: 0 auto 16px;
+}
+
+.sheetItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 12px;
+  border-radius: var(--radius-md);
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font);
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.sheetItem:hover {
+  background: oklch(22% 0.018 38);
+}
+
+.sheetCancel {
+  margin-top: 8px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: oklch(22% 0.018 38);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+}

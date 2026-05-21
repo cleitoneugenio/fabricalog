@@ -1,0 +1,110 @@
+.popover {
+  position: absolute;
+  z-index: 50;
+  background: oklch(20% 0.018 38);
+  border: 1px solid var(--border-mid);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 8px 24px oklch(0% 0 0 / 0.5);
+  min-width: 180px;
+}
+
+.top {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.input {
+  flex: 1;
+  background: oklch(15% 0.016 38);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 6px 8px;
+  font-size: 14px;
+  font-family: var(--font);
+  font-weight: 700;
+  min-width: 0;
+  text-align: center;
+}
+
+.input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.fBtn {
+  background: var(--danger-dim);
+  color: var(--danger);
+  border: 1px solid var(--danger-dim);
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-weight: 800;
+  font-size: 13px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.fBtn:hover, .fActive {
+  background: var(--danger);
+  color: oklch(10% 0.014 38);
+}
+
+.noteToggle {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 14px;
+  padding: 5px 8px;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.noteToggle:hover {
+  color: var(--text);
+  border-color: var(--border-mid);
+}
+
+.noteToggleActive {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.noteInput {
+  background: oklch(15% 0.016 38);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: var(--font);
+  line-height: 1.4;
+  resize: none;
+  width: 100%;
+  transition: border-color 0.15s;
+  animation: expandIn 0.15s ease;
+}
+
+.noteInput:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.noteInput::placeholder {
+  color: var(--text-dim);
+}
+
+@keyframes expandIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
