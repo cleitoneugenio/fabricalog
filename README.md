@@ -14,6 +14,12 @@ Problema real com restrição real gera solução real.
 
 ---
 
+## Demo
+
+[![FabricaLog — Demo](https://img.youtube.com/vi/jmZqM_GJcZc/maxresdefault.jpg)](https://www.youtube.com/watch?v=jmZqM_GJcZc)
+
+---
+
 ## Funcionalidades
 
 ### Semanas de Produção
