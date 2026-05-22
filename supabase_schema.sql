@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS app_data (
   employees   jsonb DEFAULT '[]',
   settings    jsonb DEFAULT '{}',
   forno       jsonb DEFAULT '{}',
+  carregamentos jsonb DEFAULT '[]',
   updated_at  timestamptz DEFAULT now()
 );
 
@@ -17,3 +18,38 @@ CREATE POLICY "owner_all" ON app_data
   FOR ALL
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
+
+-- ── Acesso de Visualizadores ─────────────────────────────────────────────────
+-- Admin convida viewers pelo email; viewer lê dados do owner sem poder editar
+
+CREATE TABLE IF NOT EXISTS viewer_access (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id     uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  viewer_email text NOT NULL,
+  scopes       text[] DEFAULT ARRAY['dash','semana','carga','ponto','equipe','forno','camara'],
+  created_at   timestamptz DEFAULT now(),
+  UNIQUE (owner_id, viewer_email)
+);
+
+-- Migração: adicionar coluna scopes em instâncias existentes
+-- ALTER TABLE viewer_access ADD COLUMN IF NOT EXISTS scopes text[] DEFAULT ARRAY['dash','semana','carga','ponto','equipe','forno','camara'];
+
+ALTER TABLE viewer_access ENABLE ROW LEVEL SECURITY;
+
+-- Admin gerencia seus próprios convites
+CREATE POLICY "owner_manages_viewers" ON viewer_access
+  FOR ALL USING (auth.uid() = owner_id);
+
+-- Viewer pode ler o próprio convite (para descobrir o owner_id)
+CREATE POLICY "viewer_reads_own_invite" ON viewer_access
+  FOR SELECT USING (auth.jwt() ->> 'email' = viewer_email);
+
+-- Viewers podem ler os dados do owner (SELECT apenas)
+CREATE POLICY "viewer_read_owner_data" ON app_data
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM viewer_access
+      WHERE owner_id = app_data.user_id
+        AND viewer_email = auth.jwt() ->> 'email'
+    )
+  );

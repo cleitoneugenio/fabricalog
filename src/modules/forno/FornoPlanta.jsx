@@ -98,10 +98,11 @@ function SummaryBar({ chambers }) {
   );
 }
 
-export default function FornoPlanta({ chambers, onSetStatus, onSetRestante, onConcluirDescarga, onResetAll }) {
+export default function FornoPlanta({ chambers, onSetStatus, onSetRestante, onConcluirDescarga, onResetAll, isViewer }) {
   const [selected, setSelected] = useState(null);
 
   function handleClick(id) {
+    if (isViewer) return;
     setSelected(prev => prev === id ? null : id);
   }
 
@@ -116,7 +117,7 @@ export default function FornoPlanta({ chambers, onSetStatus, onSetRestante, onCo
           <h2 className={styles.title}>Planta do Forno</h2>
           <p className={styles.sub}>18 câmaras · 2 blocos · Toque para alterar o estado</p>
         </div>
-        <Btn variant="ghost" size="sm" onClick={onResetAll}>Resetar</Btn>
+        {!isViewer && <Btn variant="ghost" size="sm" onClick={onResetAll}>Resetar</Btn>}
       </div>
 
       <SummaryBar chambers={chambers} />

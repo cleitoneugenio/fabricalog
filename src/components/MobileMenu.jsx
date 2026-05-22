@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Ic from './Ic';
 import styles from './MobileMenu.module.css';
 
-export default function MobileMenu({ onExportBackup, onImportBackup, onOpenSettings, onLogout, syncing, hidden }) {
+export default function MobileMenu({ onExportBackup, onImportBackup, onOpenSettings, onLogout, syncing, hidden, isViewer }) {
   const [open, setOpen] = useState(false);
 
   function handle(fn) {
@@ -21,7 +21,18 @@ export default function MobileMenu({ onExportBackup, onImportBackup, onOpenSetti
             <rect width="64" height="64" rx="16" fill="oklch(65% 0.19 38)"/>
             <path d="M6 56 L6 40 L14 40 L14 26 L20 26 L20 36 L28 36 L28 20 L34 20 L34 30 L44 30 L44 14 L50 14 L50 26 L58 26 L58 56 Z" fill="white"/>
           </svg>
-          <span className={styles.logoText}>FabricaLog</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span className={styles.logoText}>FabricaLog</span>
+            {isViewer && (
+              <span style={{
+                fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+                color: 'oklch(76% 0.17 68)', background: 'oklch(76% 0.17 68 / 0.12)',
+                padding: '2px 7px', borderRadius: 4, alignSelf: 'flex-start',
+              }}>
+                Visualização
+              </span>
+            )}
+          </div>
           {syncing && <span style={{ fontSize: 10, color: 'var(--warning)', fontWeight: 700 }}>↑</span>}
         </div>
         <button className={styles.menuBtn} onClick={() => setOpen(true)}>

@@ -1,6 +1,6 @@
 import styles from './InputRow.module.css';
 
-export default function InputRow({ label, type = 'text', value, onChange, hint, children, rows = 3, placeholder }) {
+export default function InputRow({ label, type = 'text', value, onChange, hint, children, rows = 3, placeholder, disabled }) {
   const id = label?.toLowerCase().replace(/\s+/g, '-');
 
   return (
@@ -13,6 +13,7 @@ export default function InputRow({ label, type = 'text', value, onChange, hint, 
           className={styles.input}
           value={value ?? ''}
           onChange={e => onChange(e.target.value)}
+          disabled={disabled}
         >
           {children}
         </select>
@@ -24,6 +25,7 @@ export default function InputRow({ label, type = 'text', value, onChange, hint, 
           onChange={e => onChange(e.target.value)}
           rows={rows}
           placeholder={placeholder}
+          disabled={disabled}
         />
       ) : (
         <input
@@ -33,6 +35,7 @@ export default function InputRow({ label, type = 'text', value, onChange, hint, 
           value={value ?? ''}
           onChange={e => onChange(type === 'number' ? e.target.value : e.target.value)}
           placeholder={placeholder}
+          disabled={disabled}
         />
       )}
 
