@@ -44,7 +44,7 @@ function SemanaCard({ semana, onSelect }) {
   );
 }
 
-export default function SemanaList({ semanas, onCreate, onSelect }) {
+export default function SemanaList({ semanas, onCreate, onSelect, isViewer }) {
   const [open, setOpen] = useState(false);
   const [numero, setNumero] = useState('');
   const [dataInicio, setDataInicio] = useState(() => new Date().toISOString().split('T')[0]);
@@ -76,9 +76,11 @@ export default function SemanaList({ semanas, onCreate, onSelect }) {
           <h1 className={styles.title}>Produção</h1>
           <p className={styles.sub}>Controle semanal de produção</p>
         </div>
-        <Btn variant="primary" size="sm" onClick={() => setOpen(true)}>
-          <Ic name="plus" size={14} /> Nova Semana
-        </Btn>
+        {!isViewer && (
+          <Btn variant="primary" size="sm" onClick={() => setOpen(true)}>
+            <Ic name="plus" size={14} /> Nova Semana
+          </Btn>
+        )}
       </div>
 
       {sorted.length === 0 ? (
@@ -88,9 +90,11 @@ export default function SemanaList({ semanas, onCreate, onSelect }) {
             <p style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Nenhuma semana cadastrada</p>
             <p style={{ fontSize: 12 }}>Registre a primeira semana de produção.</p>
           </div>
-          <Btn variant="primary" onClick={() => setOpen(true)}>
-            <Ic name="plus" size={16} /> Criar primeira semana
-          </Btn>
+          {!isViewer && (
+            <Btn variant="primary" onClick={() => setOpen(true)}>
+              <Ic name="plus" size={16} /> Criar primeira semana
+            </Btn>
+          )}
         </div>
       ) : (
         <div className={styles.list}>

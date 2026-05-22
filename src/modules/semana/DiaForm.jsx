@@ -26,18 +26,20 @@ function FornoChipGrid({ selected, onToggle, multi = false }) {
   );
 }
 
-export default function DiaForm({ dia, onChange }) {
-  const set = (field) => (value) => onChange({ ...dia, [field]: value });
+export default function DiaForm({ dia, onChange, readOnly }) {
+  const set = (field) => (value) => { if (!readOnly) onChange({ ...dia, [field]: value }); };
 
   const enfornas = Array.isArray(dia.enfornas)
     ? dia.enfornas.filter(v => v && typeof v === 'string' && v.startsWith('F'))
     : [];
 
   function toggleQueima(f) {
+    if (readOnly) return;
     onChange({ ...dia, queima: dia.queima === f ? '' : f });
   }
 
   function toggleEnforna(f) {
+    if (readOnly) return;
     const current = enfornas;
     if (current.includes(f)) {
       onChange({ ...dia, enfornas: current.filter(x => x !== f) });
@@ -47,7 +49,7 @@ export default function DiaForm({ dia, onChange }) {
   }
 
   return (
-    <div className={styles.grid}>
+    <div className={styles.grid} style={readOnly ? { pointerEvents: 'none', opacity: 0.75 } : undefined}>
 
       {/* Queima — seleção única */}
       <div className={styles.chipGroup}>
@@ -69,13 +71,13 @@ export default function DiaForm({ dia, onChange }) {
         <FornoChipGrid selected={enfornas} onToggle={toggleEnforna} multi />
       </div>
 
-      <InputRow label="Qualidade do Tijolo" type="select" value={dia.qualidade} onChange={set('qualidade')}>
+      <InputRow label="Qualidade do Tijolo" type="select" value={dia.qualidade} onChange={set('qualidade')} disabled={readOnly}>
         {QUALIDADE_OPTS.map(o => <option key={o} value={o}>{o}</option>)}
       </InputRow>
-      <InputRow label="Qtd. Funcionários" type="number" value={dia.qtdFunc} onChange={set('qtdFunc')} placeholder="0" />
-      <InputRow label="Estoque (milheiros)" type="number" value={dia.estoque} onChange={set('estoque')} placeholder="0" />
-      <InputRow label="Vendas (milheiros)" type="number" value={dia.vendas} onChange={set('vendas')} placeholder="0.0" />
-      <InputRow label="Galpão (mi)" type="number" value={dia.emCaminhoes} onChange={set('emCaminhoes')} placeholder="0.0" />
+      <InputRow label="Qtd. Funcionários" type="number" value={dia.qtdFunc} onChange={set('qtdFunc')} placeholder="0" disabled={readOnly} />
+      <InputRow label="Estoque (milheiros)" type="number" value={dia.estoque} onChange={set('estoque')} placeholder="0" disabled={readOnly} />
+      <InputRow label="Vendas (milheiros)" type="number" value={dia.vendas} onChange={set('vendas')} placeholder="0.0" disabled={readOnly} />
+      <InputRow label="Galpão (mi)" type="number" value={dia.emCaminhoes} onChange={set('emCaminhoes')} placeholder="0.0" disabled={readOnly} />
       <div className={styles.totalMi}>
         <span className={styles.totalMiLabel}>Total do dia</span>
         <span className={styles.totalMiVal}>
@@ -83,13 +85,13 @@ export default function DiaForm({ dia, onChange }) {
         </span>
       </div>
       <div className={styles.full}>
-        <InputRow label="Fornos Desocupados" type="text" value={dia.fornosDesocupados} onChange={set('fornosDesocupados')} placeholder="ex: F1 e metade do F2" />
+        <InputRow label="Fornos Desocupados" type="text" value={dia.fornosDesocupados} onChange={set('fornosDesocupados')} placeholder="ex: F1 e metade do F2" disabled={readOnly} />
       </div>
       <div className={styles.full}>
-        <InputRow label="Reforma" type="text" value={dia.reforma} onChange={set('reforma')} placeholder="ex: F6 em reforma" />
+        <InputRow label="Reforma" type="text" value={dia.reforma} onChange={set('reforma')} placeholder="ex: F6 em reforma" disabled={readOnly} />
       </div>
       <div className={styles.full}>
-        <InputRow label="Ocorrências" type="textarea" value={dia.ocorrencia} onChange={set('ocorrencia')} placeholder="Descreva qualquer ocorrência do dia..." rows={3} />
+        <InputRow label="Ocorrências" type="textarea" value={dia.ocorrencia} onChange={set('ocorrencia')} placeholder="Descreva qualquer ocorrência do dia..." rows={3} disabled={readOnly} />
       </div>
     </div>
   );

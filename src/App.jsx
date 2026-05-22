@@ -31,6 +31,8 @@ export default function App() {
   const [pontoId, setPontoId]         = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [user, setUser]               = useState(undefined); // undefined = carregando
+  const [isViewer, setIsViewer]       = useState(false);
+  const [viewerScopes, setViewerScopes] = useState(null); // null = admin (all), array = viewer scopes
   const [syncing, setSyncing]         = useState(false);
   const importRef = useRef();
   const syncTimer = useRef(null);
@@ -61,23 +63,26 @@ export default function App() {
     const data = await pullFromCloud();
     if (!data) return;
 
+    setIsViewer(data.isViewer ?? false);
+    setViewerScopes(data.viewerScopes ?? null);
+
     if (data.semanas?.length) {
-      const merged = mergeByUpdatedAt(semanaStore.items, data.semanas);
+      const merged = data.isViewer ? data.semanas : mergeByUpdatedAt(semanaStore.items, data.semanas);
       semanaStore.replaceAll(merged);
     }
     if (data.pontos?.length) {
-      const merged = mergeByUpdatedAt(pontoStore.items, data.pontos);
+      const merged = data.isViewer ? data.pontos : mergeByUpdatedAt(pontoStore.items, data.pontos);
       pontoStore.replaceAll(merged);
     }
     if (data.carregamentos?.length) {
-      const merged = mergeByUpdatedAt(carregamentoStore.items, data.carregamentos);
+      const merged = data.isViewer ? data.carregamentos : mergeByUpdatedAt(carregamentoStore.items, data.carregamentos);
       carregamentoStore.replaceAll(merged);
     }
     if (data.employees?.length) employeeStore.replaceAll(data.employees);
     if (data.settings && Object.keys(data.settings).length) settingsStore.update(data.settings);
     if (data.forno && Object.keys(data.forno).length) fornoStore.replaceAll?.(data.forno);
 
-    scheduleAutoBackup();
+    if (!data.isViewer) scheduleAutoBackup();
   }
 
   // ── Backup automático diário ─────────────────────────────────────────────
@@ -128,7 +133,7 @@ export default function App() {
 
   // ── Push: envia dados para a nuvem com debounce de 3s ───────────────────
   const scheduleSync = useCallback(() => {
-    if (!user) return;
+    if (!user || isViewer) return;
     clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(async () => {
       setSyncing(true);
@@ -142,7 +147,7 @@ export default function App() {
       });
       setSyncing(false);
     }, 3000);
-  }, [user, semanaStore.items, pontoStore.items, employeeStore.employees, settingsStore.settings, fornoStore.chambers, carregamentoStore.items]);
+  }, [user, isViewer, semanaStore.items, pontoStore.items, employeeStore.employees, settingsStore.settings, fornoStore.chambers, carregamentoStore.items]);
 
   useEffect(() => {
     scheduleSync();
@@ -152,7 +157,11 @@ export default function App() {
   const activeSemanaId = semanaId && semanaStore.getById(semanaId) ? semanaId : null;
   const activePontoId  = pontoId  && pontoStore.getById(pontoId)   ? pontoId  : null;
 
+  // null scopes = admin (access to everything); array = viewer with restricted scopes
+  const hasScope = (mod) => !isViewer || (viewerScopes ?? []).includes(mod);
+
   function navigate(mod) {
+    if (!hasScope(mod)) return;
     setModule(mod);
     setSemanaId(null);
     setPontoId(null);
@@ -195,6 +204,8 @@ export default function App() {
 
   // ── Render principal ──────────────────────────────────────────────────────
   function renderContent() {
+    if (!hasScope(module)) return null;
+
     if (module === 'dash') return <Dashboard semanas={semanaStore.items} onUpdateSemana={(id, patch) => semanaStore.update(id, patch)} />;
 
     if (module === 'semana') {
@@ -204,17 +215,19 @@ export default function App() {
           <SemanaDetalhe
             semana={semana}
             carregamentos={carregamentoStore.items}
+            isViewer={isViewer}
             onBack={() => setSemanaId(null)}
-            onUpdateDia={(idx, patch) => semanaStore.updateDia(activeSemanaId, idx, patch)}
-            onUpdate={(patch) => semanaStore.update(activeSemanaId, patch)}
-            onDelete={() => { semanaStore.remove(activeSemanaId); setSemanaId(null); }}
+            onUpdateDia={isViewer ? undefined : (idx, patch) => semanaStore.updateDia(activeSemanaId, idx, patch)}
+            onUpdate={isViewer ? undefined : (patch) => semanaStore.update(activeSemanaId, patch)}
+            onDelete={isViewer ? undefined : () => { semanaStore.remove(activeSemanaId); setSemanaId(null); }}
           />
         );
       }
       return (
         <SemanaList
           semanas={semanaStore.items}
-          onCreate={(partial) => { const id = semanaStore.create(partial); setSemanaId(id); }}
+          isViewer={isViewer}
+          onCreate={isViewer ? undefined : (partial) => { const id = semanaStore.create(partial); setSemanaId(id); }}
           onSelect={setSemanaId}
         />
       );
@@ -228,10 +241,11 @@ export default function App() {
             ponto={ponto}
             employees={employeeStore.employees}
             settings={settingsStore.settings}
+            isViewer={isViewer}
             onBack={() => setPontoId(null)}
-            onUpdateCell={(empId, dayKey, value, nota) => pontoStore.updateCell(activePontoId, empId, dayKey, value, nota)}
-            onUpdate={(patch) => pontoStore.update(activePontoId, patch)}
-            onDelete={() => { pontoStore.remove(activePontoId); setPontoId(null); }}
+            onUpdateCell={isViewer ? undefined : (empId, dayKey, value, nota) => pontoStore.updateCell(activePontoId, empId, dayKey, value, nota)}
+            onUpdate={isViewer ? undefined : (patch) => pontoStore.update(activePontoId, patch)}
+            onDelete={isViewer ? undefined : () => { pontoStore.remove(activePontoId); setPontoId(null); }}
           />
         );
       }
@@ -239,13 +253,14 @@ export default function App() {
         <PontoList
           pontos={pontoStore.items}
           employees={employeeStore.employees}
-          onCreate={(partial) => { const id = pontoStore.create(partial, employeeStore.employees); setPontoId(id); }}
+          isViewer={isViewer}
+          onCreate={isViewer ? undefined : (partial) => { const id = pontoStore.create(partial, employeeStore.employees); setPontoId(id); }}
           onSelect={setPontoId}
         />
       );
     }
 
-    if (module === 'carga') return <CargaList store={carregamentoStore} />;
+    if (module === 'carga') return <CargaList store={carregamentoStore} isViewer={isViewer} />;
 
     if (module === 'camara') return <Camara />;
 
@@ -253,10 +268,11 @@ export default function App() {
       return (
         <FornoPlanta
           chambers={fornoStore.chambers}
-          onSetStatus={fornoStore.setStatus}
-          onSetRestante={fornoStore.setRestante}
-          onConcluirDescarga={fornoStore.concluirDescarga}
-          onResetAll={fornoStore.resetAll}
+          isViewer={isViewer}
+          onSetStatus={isViewer ? undefined : fornoStore.setStatus}
+          onSetRestante={isViewer ? undefined : fornoStore.setRestante}
+          onConcluirDescarga={isViewer ? undefined : fornoStore.concluirDescarga}
+          onResetAll={isViewer ? undefined : fornoStore.resetAll}
         />
       );
     }
@@ -265,9 +281,10 @@ export default function App() {
       return (
         <EquipeList
           employees={employeeStore.employees}
-          onAdd={employeeStore.add}
-          onRename={employeeStore.rename}
-          onRemove={employeeStore.remove}
+          isViewer={isViewer}
+          onAdd={isViewer ? undefined : employeeStore.add}
+          onRename={isViewer ? undefined : employeeStore.rename}
+          onRemove={isViewer ? undefined : employeeStore.remove}
         />
       );
     }
@@ -282,6 +299,8 @@ export default function App() {
         onChange={navigate}
         syncing={syncing}
         userEmail={user.email}
+        isViewer={isViewer}
+        viewerScopes={viewerScopes}
         onExportBackup={() => exportBackup(semanaStore.items, pontoStore.items, employeeStore.employees, settingsStore.settings, carregamentoStore.items)}
         onImportBackup={() => importRef.current?.click()}
         onOpenSettings={() => setShowSettings(true)}
@@ -291,6 +310,8 @@ export default function App() {
         <MobileMenu
           hidden={!!(activeSemanaId || activePontoId)}
           syncing={syncing}
+          isViewer={isViewer}
+          viewerScopes={viewerScopes}
           onExportBackup={() => exportBackup(semanaStore.items, pontoStore.items, employeeStore.employees, settingsStore.settings, carregamentoStore.items)}
           onImportBackup={() => importRef.current?.click()}
           onOpenSettings={() => setShowSettings(true)}
@@ -298,7 +319,7 @@ export default function App() {
         />
         {renderContent()}
       </main>
-      <BottomNav active={module} onChange={navigate} />
+      <BottomNav active={module} onChange={navigate} isViewer={isViewer} viewerScopes={viewerScopes} />
 
       <input ref={importRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImport} />
 
@@ -307,6 +328,8 @@ export default function App() {
         onClose={() => setShowSettings(false)}
         settings={settingsStore.settings}
         onSave={settingsStore.update}
+        isViewer={isViewer}
+        user={user}
       />
 
       {import.meta.env.DEV && (

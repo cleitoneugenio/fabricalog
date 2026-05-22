@@ -5,7 +5,7 @@ import Modal from '../../components/Modal';
 import InputRow from '../../components/InputRow';
 import styles from './EquipeList.module.css';
 
-export default function EquipeList({ employees, onAdd, onRename, onRemove }) {
+export default function EquipeList({ employees, onAdd, onRename, onRemove, isViewer }) {
   const [addOpen, setAddOpen] = useState(false);
   const [name, setName] = useState('');
   const [confirmId, setConfirmId] = useState(null);
@@ -45,9 +45,11 @@ export default function EquipeList({ employees, onAdd, onRename, onRemove }) {
           <h1 className={styles.title}>Equipe</h1>
           <p className={styles.sub}>{employees.length} funcionário{employees.length !== 1 ? 's' : ''} cadastrado{employees.length !== 1 ? 's' : ''}</p>
         </div>
-        <Btn variant="primary" size="sm" onClick={() => setAddOpen(true)}>
-          <Ic name="person-plus" size={14} /> Adicionar
-        </Btn>
+        {!isViewer && (
+          <Btn variant="primary" size="sm" onClick={() => setAddOpen(true)}>
+            <Ic name="person-plus" size={14} /> Adicionar
+          </Btn>
+        )}
       </div>
 
       {employees.length === 0 ? (
@@ -57,16 +59,18 @@ export default function EquipeList({ employees, onAdd, onRename, onRemove }) {
             <p style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Nenhum funcionário</p>
             <p style={{ fontSize: 12 }}>Adicione o primeiro funcionário da equipe.</p>
           </div>
-          <Btn variant="primary" onClick={() => setAddOpen(true)}>
-            <Ic name="person-plus" size={16} /> Adicionar funcionário
-          </Btn>
+          {!isViewer && (
+            <Btn variant="primary" onClick={() => setAddOpen(true)}>
+              <Ic name="person-plus" size={16} /> Adicionar funcionário
+            </Btn>
+          )}
         </div>
       ) : (
         <div className={styles.list}>
           {employees.map((emp, i) => (
             <div key={emp.id} className={styles.card}>
               <span className={styles.num}>{i + 1}</span>
-              {editId === emp.id ? (
+              {!isViewer && editId === emp.id ? (
                 <input
                   className={styles.editInput}
                   value={editName}
@@ -81,19 +85,22 @@ export default function EquipeList({ employees, onAdd, onRename, onRemove }) {
               ) : (
                 <span
                   className={styles.empName}
-                  onClick={() => startEdit(emp)}
-                  title="Clique para renomear"
+                  onClick={!isViewer ? () => startEdit(emp) : undefined}
+                  title={!isViewer ? 'Clique para renomear' : undefined}
+                  style={isViewer ? { cursor: 'default' } : undefined}
                 >
                   {emp.name}
                 </span>
               )}
-              <button
-                className={styles.deleteBtn}
-                onClick={() => setConfirmId(emp.id)}
-                title="Remover funcionário"
-              >
-                <Ic name="trash" size={14} />
-              </button>
+              {!isViewer && (
+                <button
+                  className={styles.deleteBtn}
+                  onClick={() => setConfirmId(emp.id)}
+                  title="Remover funcionário"
+                >
+                  <Ic name="trash" size={14} />
+                </button>
+              )}
             </div>
           ))}
         </div>

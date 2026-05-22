@@ -30,27 +30,31 @@ function totaisCarregamentos(carregamentos, iso) {
   return { vendas, estoque, emCaminhoes };
 }
 
-export default function SemanaDetalhe({ semana, carregamentos, onBack, onUpdateDia, onUpdate, onDelete }) {
+export default function SemanaDetalhe({ semana, carregamentos, isViewer, onBack, onUpdateDia, onUpdate, onDelete }) {
   const [activeDay, setActiveDay] = useState(0);
 
-  // Auto-preenche vendas/estoque/galpão a partir dos carregamentos do dia,
-  // mas só se os três campos estiverem todos vazios (não sobrescreve dados existentes)
+  // Sincroniza todos os 6 dias com os carregamentos de uma vez.
+  // Roda sempre que carregamentos mudam — sem precisar visitar cada aba.
   useEffect(() => {
-    if (!carregamentos?.length || !semana.dataInicio) return;
-    const dia = (semana.dias || [])[activeDay] || {};
-    const isEmpty = !Number(dia.vendas) && !Number(dia.estoque) && !Number(dia.emCaminhoes);
-    if (!isEmpty) return;
-    const iso = dayISO(semana.dataInicio, activeDay);
-    const { vendas, estoque, emCaminhoes } = totaisCarregamentos(carregamentos, iso);
-    if (vendas > 0 || estoque > 0 || emCaminhoes > 0) {
-      onUpdateDia(activeDay, {
-        ...dia,
-        vendas:      vendas      > 0 ? String(vendas)      : (dia.vendas      ?? ''),
-        estoque:     estoque     > 0 ? String(estoque)     : (dia.estoque     ?? ''),
-        emCaminhoes: emCaminhoes > 0 ? String(emCaminhoes) : (dia.emCaminhoes ?? ''),
-      });
-    }
-  }, [activeDay, semana.dataInicio]);
+    if (!semana.dataInicio) return;
+    const round2 = (n) => String(Math.round(n * 100) / 100);
+    const dias = semana.dias || [];
+    let changed = false;
+    const novosDias = dias.map((dia, idx) => {
+      const iso = dayISO(semana.dataInicio, idx);
+      const { vendas, estoque, emCaminhoes } = totaisCarregamentos(carregamentos, iso);
+      if (vendas === 0 && estoque === 0 && emCaminhoes === 0) return dia;
+      const nv = round2(vendas);
+      const ne = round2(estoque);
+      const nc = round2(emCaminhoes);
+      if (nv === String(dia.vendas ?? '') &&
+          ne === String(dia.estoque ?? '') &&
+          nc === String(dia.emCaminhoes ?? '')) return dia;
+      changed = true;
+      return { ...dia, vendas: nv, estoque: ne, emCaminhoes: nc };
+    });
+    if (changed) onUpdate({ dias: novosDias });
+  }, [semana.dataInicio, carregamentos]);
   const [showDelete, setShowDelete] = useState(false);
   const [showMeta, setShowMeta] = useState(false);
   const [metaInput, setMetaInput] = useState(String(semana.meta));
@@ -89,15 +93,19 @@ export default function SemanaDetalhe({ semana, carregamentos, onBack, onUpdateD
           <Btn variant="ghost" size="sm" onClick={() => exportSemana(semana).catch(err => alert(`Erro ao exportar: ${err.message}`))}>
             <Ic name="download" size={14} /> Exportar
           </Btn>
-          <Btn variant="ghost" size="sm" onClick={() => { setEditNumero(String(semana.numero)); setEditData(semana.dataInicio); setShowEdit(true); }}>
-            <Ic name="edit" size={14} />
-          </Btn>
-          <Btn variant="ghost" size="sm" onClick={() => { setMetaInput(String(semana.meta)); setShowMeta(true); }}>
-            Meta
-          </Btn>
-          <Btn variant="danger" size="sm" onClick={() => setShowDelete(true)}>
-            <Ic name="trash" size={14} />
-          </Btn>
+          {!isViewer && (
+            <>
+              <Btn variant="ghost" size="sm" onClick={() => { setEditNumero(String(semana.numero)); setEditData(semana.dataInicio); setShowEdit(true); }}>
+                <Ic name="edit" size={14} />
+              </Btn>
+              <Btn variant="ghost" size="sm" onClick={() => { setMetaInput(String(semana.meta)); setShowMeta(true); }}>
+                Meta
+              </Btn>
+              <Btn variant="danger" size="sm" onClick={() => setShowDelete(true)}>
+                <Ic name="trash" size={14} />
+              </Btn>
+            </>
+          )}
         </div>
       </div>
 
@@ -147,7 +155,8 @@ export default function SemanaDetalhe({ semana, carregamentos, onBack, onUpdateD
       <div className={styles.formWrap}>
         <DiaForm
           dia={dias[activeDay] || {}}
-          onChange={(updated) => onUpdateDia(activeDay, updated)}
+          readOnly={isViewer}
+          onChange={isViewer ? undefined : (updated) => onUpdateDia(activeDay, updated)}
         />
       </div>
 

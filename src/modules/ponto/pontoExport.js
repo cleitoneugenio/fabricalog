@@ -213,11 +213,7 @@ tbody td.total-label { font-weight: 800; text-transform: uppercase; font-size: 1
       <div class="kpi-value">${fmtBRL(totalFolha)}</div>
       <div class="badge warn">${rows.length} funcionários</div>
     </div>
-    <div class="kpi">
-      <div class="kpi-label">Dias Trabalhados</div>
-      <div class="kpi-value">${totalDias}<span class="unit">dias</span></div>
-      <div class="kpi-sub">de ${rows.length * 6} possíveis</div>
-    </div>
+
     <div class="kpi">
       <div class="kpi-label">Total Bônus</div>
       <div class="kpi-value">${fmtBRL(totalBonus)}</div>

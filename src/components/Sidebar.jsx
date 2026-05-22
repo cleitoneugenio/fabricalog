@@ -11,7 +11,11 @@ const ITEMS = [
   { key: 'forno',  label: 'Forno',         icon: 'flame' },
 ];
 
-export default function Sidebar({ active, onChange, onExportBackup, onImportBackup, onOpenSettings, onLogout, syncing, userEmail }) {
+export default function Sidebar({ active, onChange, onExportBackup, onImportBackup, onOpenSettings, onLogout, syncing, userEmail, isViewer, viewerScopes }) {
+  const visibleItems = isViewer && viewerScopes
+    ? ITEMS.filter(item => viewerScopes.includes(item.key))
+    : ITEMS;
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
@@ -19,11 +23,22 @@ export default function Sidebar({ active, onChange, onExportBackup, onImportBack
           <rect width="64" height="64" rx="16" fill="oklch(65% 0.19 38)"/>
           <path d="M6 56 L6 40 L14 40 L14 26 L20 26 L20 36 L28 36 L28 20 L34 20 L34 30 L44 30 L44 14 L50 14 L50 26 L58 26 L58 56 Z" fill="white"/>
         </svg>
-        <span className={styles.logoText}>FabricaLog</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
+          <span className={styles.logoText}>FabricaLog</span>
+          {isViewer && (
+            <span style={{
+              fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+              color: 'oklch(76% 0.17 68)', background: 'oklch(76% 0.17 68 / 0.12)',
+              padding: '2px 7px', borderRadius: 4, alignSelf: 'flex-start',
+            }}>
+              Visualização
+            </span>
+          )}
+        </div>
       </div>
 
       <nav className={styles.nav}>
-        {ITEMS.map(item => (
+        {visibleItems.map(item => (
           <button
             key={item.key}
             className={`${styles.item} ${active === item.key ? styles.active : ''}`}

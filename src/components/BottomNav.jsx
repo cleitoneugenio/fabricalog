@@ -11,10 +11,14 @@ const ITEMS = [
   { key: 'forno',  label: 'Forno',     icon: 'flame' },
 ];
 
-export default function BottomNav({ active, onChange }) {
+export default function BottomNav({ active, onChange, isViewer, viewerScopes }) {
+  const visibleItems = isViewer && viewerScopes
+    ? ITEMS.filter(item => viewerScopes.includes(item.key))
+    : ITEMS;
+
   return (
     <nav className={styles.nav}>
-      {ITEMS.map(item => (
+      {visibleItems.map(item => (
         <button
           key={item.key}
           className={`${styles.item} ${active === item.key ? styles.active : ''}`}

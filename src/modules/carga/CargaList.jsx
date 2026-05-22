@@ -130,7 +130,7 @@ function CarregamentoCard({ item, onEdit }) {
   const dest = destinoLabel(item);
 
   return (
-    <button className={styles.card} onClick={() => onEdit(item)}>
+    <button className={styles.card} onClick={onEdit ? () => onEdit(item) : undefined} style={!onEdit ? { cursor: 'default' } : undefined}>
       <div className={styles.cardTop}>
         <span className={styles.cardNome}>{item.nome || '—'}</span>
         <div className={styles.cardPills}>
@@ -158,7 +158,7 @@ function CarregamentoCard({ item, onEdit }) {
   );
 }
 
-export default function CargaList({ store }) {
+export default function CargaList({ store, isViewer }) {
   const [selectedDate, setSelectedDate] = useState(toISO(new Date()));
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -312,15 +312,17 @@ export default function CargaList({ store }) {
       ) : (
         <div className={styles.list}>
           {lista.map(item => (
-            <CarregamentoCard key={item.id} item={item} onEdit={openEdit} />
+            <CarregamentoCard key={item.id} item={item} onEdit={isViewer ? undefined : openEdit} />
           ))}
         </div>
       )}
 
       {/* FAB */}
-      <button className={styles.fab} onClick={openNew} aria-label="Novo carregamento">
-        <Ic name="plus" size={24} />
-      </button>
+      {!isViewer && (
+        <button className={styles.fab} onClick={openNew} aria-label="Novo carregamento">
+          <Ic name="plus" size={24} />
+        </button>
+      )}
 
       {/* Modal */}
       <Modal

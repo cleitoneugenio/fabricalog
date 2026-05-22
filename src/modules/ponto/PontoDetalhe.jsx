@@ -117,7 +117,8 @@ function EmployeeCard({ employee, dias, onEdit, onToggleBonus }) {
             <button
               key={key}
               className={`${styles.dayPill} ${isFalta ? styles.dayPillFalta : hasVal ? styles.dayPillFilled : styles.dayPillEmpty}`}
-              onClick={() => onEdit(employee, key, DAY_SHORT[i], val, dias[key + '_nota'])}
+              onClick={onEdit ? () => onEdit(employee, key, DAY_SHORT[i], val, dias[key + '_nota']) : undefined}
+              style={!onEdit ? { cursor: 'default' } : undefined}
             >
               <span className={styles.dayPillLabel}>{DAY_SHORT[i]}</span>
               <span className={styles.dayPillVal}>
@@ -132,7 +133,7 @@ function EmployeeCard({ employee, dias, onEdit, onToggleBonus }) {
       {hasActivity && (
         <div className={styles.empFooter}>
           <span>{dCount} dia{dCount !== 1 ? 's' : ''}</span>
-          {bonusEligible && (
+          {bonusEligible && onToggleBonus && (
             <button
               className={`${styles.bonusToggle} ${bloqueado ? styles.bonusToggleOff : styles.bonusToggleOn}`}
               onClick={() => onToggleBonus(employee.id, !bloqueado)}
@@ -235,12 +236,138 @@ function DesktopTable({ ponto, employees, totals, editing, setEditing, onUpdateC
   );
 }
 
+// ── Recibos picker ────────────────────────────────────────────────────────────
+function RecibosPicker({ ponto, employees, settings, onClose }) {
+  const rows = employees.map(emp => {
+    const d = ponto.dias[emp.id] ?? {};
+    const { total } = calcPonto(d);
+    return { emp, total };
+  });
+
+  const [selected, setSelected] = useState(() => new Set(
+    rows.filter(r => r.total > 0).map(r => r.emp.id)
+  ));
+  const [loading, setLoading] = useState(false);
+
+  function toggle(id) {
+    setSelected(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    const withValue = rows.filter(r => r.total > 0).map(r => r.emp.id);
+    const allChecked = withValue.every(id => selected.has(id));
+    setSelected(new Set(allChecked ? [] : withValue));
+  }
+
+  async function handleGerar() {
+    const filtered = employees.filter(e => selected.has(e.id));
+    if (filtered.length === 0) return;
+    setLoading(true);
+    try {
+      await gerarRecibos(ponto, filtered, settings);
+    } catch (err) {
+      alert(`Erro ao gerar recibos: ${err.message}`);
+    } finally {
+      setLoading(false);
+      onClose();
+    }
+  }
+
+  const withValue = rows.filter(r => r.total > 0);
+  const withoutValue = rows.filter(r => r.total === 0);
+  const totalSelecionado = rows
+    .filter(r => selected.has(r.emp.id))
+    .reduce((s, r) => s + r.total, 0);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      {/* Header de seleção */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <span style={{ fontSize: 12, color: 'var(--text-dim)' }}>
+          {selected.size} selecionado{selected.size !== 1 ? 's' : ''} · {formatBRL(totalSelecionado)}
+        </span>
+        <button
+          onClick={toggleAll}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font)' }}
+        >
+          {withValue.every(r => selected.has(r.emp.id)) ? 'Desmarcar todos' : 'Marcar todos'}
+        </button>
+      </div>
+
+      {/* Lista com valor */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 320, overflowY: 'auto' }}>
+        {withValue.map(({ emp, total }) => (
+          <label
+            key={emp.id}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px',
+              borderRadius: 8, cursor: 'pointer',
+              background: selected.has(emp.id) ? 'var(--accent-dim)' : 'oklch(14% 0.016 38)',
+              border: `1px solid ${selected.has(emp.id) ? 'var(--accent)' : 'var(--border)'}`,
+              transition: 'all 0.12s',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={selected.has(emp.id)}
+              onChange={() => toggle(emp.id)}
+              style={{ width: 15, height: 15, accentColor: 'var(--accent)', cursor: 'pointer', flexShrink: 0 }}
+            />
+            <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{emp.name}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--success)', fontFamily: 'var(--font-mono, monospace)' }}>
+              {formatBRL(total)}
+            </span>
+          </label>
+        ))}
+
+        {/* Funcionários sem valor — sempre desmarcados */}
+        {withoutValue.length > 0 && (
+          <>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '10px 4px 4px' }}>
+              Sem valor esta semana
+            </div>
+            {withoutValue.map(({ emp }) => (
+              <div
+                key={emp.id}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px',
+                  borderRadius: 8, opacity: 0.45,
+                  background: 'oklch(14% 0.016 38)', border: '1px solid var(--border)',
+                }}
+              >
+                <input type="checkbox" disabled checked={false}
+                  style={{ width: 15, height: 15, flexShrink: 0 }} />
+                <span style={{ flex: 1, fontSize: 13, color: 'var(--text-dim)' }}>{emp.name}</span>
+                <span style={{ fontSize: 13, color: 'var(--text-dim)' }}>—</span>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+        <Btn variant="ghost" onClick={onClose}>Cancelar</Btn>
+        <Btn variant="primary" onClick={handleGerar} disabled={loading || selected.size === 0}>
+          <Ic name="file-text" size={14} />
+          {loading ? 'Gerando...' : `Gerar ${selected.size} recibo${selected.size !== 1 ? 's' : ''}`}
+        </Btn>
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
-export default function PontoDetalhe({ ponto, employees, settings, onBack, onUpdateCell, onUpdate, onDelete }) {
+export default function PontoDetalhe({ ponto, employees, settings, isViewer, onBack, onUpdateCell, onUpdate, onDelete }) {
   const [editing, setEditing] = useState(null);
   const [mobileEdit, setMobileEdit] = useState(null);
   const [showDelete, setShowDelete] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [showRecibosPicker, setShowRecibosPicker] = useState(false);
   const [editNumero, setEditNumero] = useState(String(ponto.numero));
   const [editData, setEditData] = useState(ponto.dataInicio);
 
@@ -278,15 +405,19 @@ export default function PontoDetalhe({ ponto, employees, settings, onBack, onUpd
           <Btn variant="ghost" size="sm" onClick={() => exportPonto(ponto, employees).catch(err => alert(`Erro ao exportar: ${err.message}`))}>
             <Ic name="download" size={14} /> <span className={styles.btnLabel}>Exportar</span>
           </Btn>
-          <Btn variant="primary" size="sm" onClick={() => gerarRecibos(ponto, employees, settings).catch(err => alert(`Erro ao gerar recibos: ${err.message}`))}>
+          <Btn variant="primary" size="sm" onClick={() => setShowRecibosPicker(true)}>
             <Ic name="file-text" size={14} /> <span className={styles.btnLabel}>Recibos</span>
           </Btn>
-          <Btn variant="ghost" size="sm" onClick={() => { setEditNumero(String(ponto.numero)); setEditData(ponto.dataInicio); setShowEdit(true); }}>
-            <Ic name="edit" size={14} />
-          </Btn>
-          <Btn variant="danger" size="sm" onClick={() => setShowDelete(true)}>
-            <Ic name="trash" size={14} />
-          </Btn>
+          {!isViewer && (
+            <>
+              <Btn variant="ghost" size="sm" onClick={() => { setEditNumero(String(ponto.numero)); setEditData(ponto.dataInicio); setShowEdit(true); }}>
+                <Ic name="edit" size={14} />
+              </Btn>
+              <Btn variant="danger" size="sm" onClick={() => setShowDelete(true)}>
+                <Ic name="trash" size={14} />
+              </Btn>
+            </>
+          )}
         </div>
       </div>
 
@@ -329,10 +460,10 @@ export default function PontoDetalhe({ ponto, employees, settings, onBack, onUpd
             key={emp.id}
             employee={emp}
             dias={ponto.dias[emp.id] ?? {}}
-            onEdit={(employee, key, label, val, nota) =>
+            onEdit={isViewer ? undefined : (employee, key, label, val, nota) =>
               setMobileEdit({ employee, key, label, val, nota })
             }
-            onToggleBonus={(empId, block) => onUpdateCell(empId, 'bonus_bloqueado', block, undefined)}
+            onToggleBonus={isViewer ? undefined : (empId, block) => onUpdateCell(empId, 'bonus_bloqueado', block, undefined)}
           />
         ))}
         <p className={styles.legend}>
@@ -346,9 +477,9 @@ export default function PontoDetalhe({ ponto, employees, settings, onBack, onUpd
           ponto={ponto}
           employees={employees}
           totals={totals}
-          editing={editing}
-          setEditing={setEditing}
-          onUpdateCell={onUpdateCell}
+          editing={isViewer ? null : editing}
+          setEditing={isViewer ? () => {} : setEditing}
+          onUpdateCell={isViewer ? () => {} : onUpdateCell}
         />
         <p className={styles.legend}>
           <strong>F</strong> = Falta &nbsp;|&nbsp; <strong>R$ 25</strong> = Bônus automático (6 dias) · clique para bloquear individualmente &nbsp;|&nbsp; <strong>●</strong> = Nota
@@ -424,6 +555,20 @@ export default function PontoDetalhe({ ponto, employees, settings, onBack, onUpd
         <p style={{ color: 'var(--text-dim)', fontSize: 14 }}>
           Tem certeza que deseja excluir o ponto de <strong style={{ color: 'var(--text)' }}>{weekLabel(ponto)}</strong>? Esta ação não pode ser desfeita.
         </p>
+      </Modal>
+
+      {/* Recibos picker modal */}
+      <Modal
+        open={showRecibosPicker}
+        onClose={() => setShowRecibosPicker(false)}
+        title="Gerar Recibos"
+      >
+        <RecibosPicker
+          ponto={ponto}
+          employees={employees}
+          settings={settings}
+          onClose={() => setShowRecibosPicker(false)}
+        />
       </Modal>
     </div>
   );

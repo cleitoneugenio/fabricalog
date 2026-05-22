@@ -44,7 +44,7 @@ function PontoCard({ ponto, employees, onSelect }) {
   );
 }
 
-export default function PontoList({ pontos, employees, onCreate, onSelect }) {
+export default function PontoList({ pontos, employees, onCreate, onSelect, isViewer }) {
   const [open, setOpen] = useState(false);
   const [numero, setNumero] = useState('');
   const [dataInicio, setDataInicio] = useState(() => new Date().toISOString().split('T')[0]);
@@ -76,9 +76,11 @@ export default function PontoList({ pontos, employees, onCreate, onSelect }) {
           <h1 className={styles.title}>Ponto</h1>
           <p className={styles.sub}>Controle de ponto dos funcionários</p>
         </div>
-        <Btn variant="primary" size="sm" onClick={() => setOpen(true)}>
-          <Ic name="plus" size={14} /> Nova Semana
-        </Btn>
+        {!isViewer && (
+          <Btn variant="primary" size="sm" onClick={() => setOpen(true)}>
+            <Ic name="plus" size={14} /> Nova Semana
+          </Btn>
+        )}
       </div>
 
       {sorted.length === 0 ? (
@@ -88,9 +90,11 @@ export default function PontoList({ pontos, employees, onCreate, onSelect }) {
             <p style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Nenhum registro de ponto</p>
             <p style={{ fontSize: 12 }}>Registre a primeira semana de ponto dos funcionários.</p>
           </div>
-          <Btn variant="primary" onClick={() => setOpen(true)}>
-            <Ic name="plus" size={16} /> Criar primeira semana
-          </Btn>
+          {!isViewer && (
+            <Btn variant="primary" onClick={() => setOpen(true)}>
+              <Ic name="plus" size={16} /> Criar primeira semana
+            </Btn>
+          )}
         </div>
       ) : (
         <div className={styles.list}>
