@@ -1,3 +1,5 @@
+
+
 # FabricaLog
 
 > Do chão de fábrica para o código — e de volta pro chão de fábrica.
