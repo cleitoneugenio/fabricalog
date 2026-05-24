@@ -512,12 +512,12 @@ export default function ConfigModal({ open, onClose, settings, onSave, isViewer,
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   {fornoOptions.map(opt => {
-                    const isActive = opt.value === activeForno;
+                    const isActive = opt.key === activeForno;
                     return (
                       <button
-                        key={opt.value}
+                        key={opt.key}
                         type="button"
-                        onClick={() => { onSwitchForno(opt.value); onClose(); }}
+                        onClick={() => { onSwitchForno(opt.key); onClose(); }}
                         style={{
                           fontSize: 13, fontWeight: 700, padding: '8px 18px', borderRadius: 8,
                           cursor: 'pointer', fontFamily: 'var(--font)',
