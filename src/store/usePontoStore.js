@@ -52,6 +52,16 @@ export function usePontoStore() {
     setItems(prev => prev.filter(x => x.id !== id));
   }
 
+  function updateBonusValor(id, empId, valor) {
+    setItems(prev => prev.map(x => {
+      if (x.id !== id) return x;
+      const empDia = { ...x.dias[empId] };
+      if (valor == null || valor === '') delete empDia.bonus_valor;
+      else empDia.bonus_valor = Number(valor);
+      return { ...x, dias: { ...x.dias, [empId]: empDia }, updatedAt: now() };
+    }));
+  }
+
   function replaceAll(newItems) {
     setItems(newItems.map(x => ({ ...x })));
   }
@@ -60,5 +70,5 @@ export function usePontoStore() {
     return items.find(x => x.id === id);
   }
 
-  return { items, create, update, updateCell, remove, replaceAll, getById };
+  return { items, create, update, updateCell, updateBonusValor, remove, replaceAll, getById };
 }

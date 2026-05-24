@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import Modal from './components/Modal';
 import Sidebar from './components/Sidebar';
 import BottomNav from './components/BottomNav';
 import Dashboard from './modules/dashboard/Dashboard';
@@ -31,12 +32,20 @@ export default function App() {
   const [pontoId, setPontoId]         = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [user, setUser]               = useState(undefined); // undefined = carregando
-  const [isViewer, setIsViewer]       = useState(false);
-  const [viewerScopes, setViewerScopes] = useState(null); // null = admin (all), array = viewer scopes
-  const [syncing, setSyncing]         = useState(false);
+  const [isViewer, setIsViewer]           = useState(false);
+  const [isEditor, setIsEditor]           = useState(false);
+  const [viewerScopes, setViewerScopes]   = useState(null);
+  const [viewerInvites, setViewerInvites] = useState([]);
+  const [activeOwnerId, setActiveOwnerId] = useState(null);
+  const [activeForno, setActiveForno]     = useState(null);  // chave do forno ativo ('cedan', 'continuo'…)
+  const [adminFornos, setAdminFornos]     = useState([]);    // [{key, label}] — para o seletor do admin
+  const [dataOwnerId, setDataOwnerId]     = useState(null);  // user_id do dono dos dados (admin/editor→admin)
+  const [showFornoPicker, setShowFornoPicker] = useState(false);
+  const [syncing, setSyncing]           = useState(false);
   const importRef = useRef();
   const syncTimer = useRef(null);
   const autoBackupDone = useRef(false);
+  const sessionReady = useRef(false); // bloqueia push durante troca de usuário
 
   const semanaStore        = useSemanaStore();
   const pontoStore         = usePontoStore();
@@ -46,43 +55,104 @@ export default function App() {
   const fornoStore    = useFornoStore();
 
   // ── Auth: verifica sessão ao montar ──────────────────────────────────────
+  function clearDataStores() {
+    semanaStore.replaceAll([]);
+    pontoStore.replaceAll([]);
+    carregamentoStore.replaceAll([]);
+    employeeStore.replaceAll([]);
+    fornoStore.replaceAll?.({});
+  }
+
+  function clearLocalStores() {
+    sessionReady.current = false;
+    clearDataStores();
+    settingsStore.reset();
+    setIsViewer(false);
+    setIsEditor(false);
+    setViewerScopes(null);
+    setViewerInvites([]);
+    setActiveOwnerId(null);
+    setActiveForno(null);
+    setAdminFornos([]);
+    setDataOwnerId(null);
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) syncDown();
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) syncDownRef.current();
     });
     return () => subscription.unsubscribe();
   }, []);
 
   // ── Pull: merge dados da nuvem com dados locais (last-write-wins por item) ─
-  async function syncDown() {
-    const data = await pullFromCloud();
-    if (!data) return;
+  // replace=true: usado na troca de forno — sempre sobrescreve os stores locais
+  async function syncDown(ownerId = null, fornoKey = null, replace = false) {
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (!currentUser) return;
+
+    const prevId = localStorage.getItem('fabricalog_session_user');
+    if (prevId !== currentUser.id) {
+      clearLocalStores();
+      localStorage.setItem('fabricalog_session_user', currentUser.id);
+    }
+
+    const resolvedOwnerId = ownerId ?? activeOwnerId ?? null;
+    const resolvedForno   = fornoKey ?? activeForno ?? null;
+    const data = await pullFromCloud(resolvedForno, resolvedOwnerId);
+    if (!data) { sessionReady.current = true; return; }
 
     setIsViewer(data.isViewer ?? false);
+    setIsEditor(data.isEditor ?? false);
     setViewerScopes(data.viewerScopes ?? null);
+    setViewerInvites(data.viewerInvites ?? []);
+    if (data.activeOwnerId) setActiveOwnerId(data.activeOwnerId);
+    if (data.activeForno)   setActiveForno(data.activeForno);
+    if (data.adminFornos)   setAdminFornos(data.adminFornos);
+    if (data.adminUserId)   setDataOwnerId(data.adminUserId);
 
-    if (data.semanas?.length) {
-      const merged = data.isViewer ? data.semanas : mergeByUpdatedAt(semanaStore.items, data.semanas);
-      semanaStore.replaceAll(merged);
+    if (data.needsFornoPicker) {
+      setShowFornoPicker(true);
+      return;
     }
-    if (data.pontos?.length) {
-      const merged = data.isViewer ? data.pontos : mergeByUpdatedAt(pontoStore.items, data.pontos);
-      pontoStore.replaceAll(merged);
+
+    if (replace) {
+      // Troca de forno: sobrescreve completamente, inclusive com arrays vazios
+      semanaStore.replaceAll(data.semanas ?? []);
+      pontoStore.replaceAll(data.pontos ?? []);
+      carregamentoStore.replaceAll(data.carregamentos ?? []);
+      employeeStore.replaceAll(data.employees ?? []);
+      fornoStore.replaceAll?.(data.forno ?? {});
+    } else {
+      // Sync normal: merge last-write-wins (não apaga dados locais com remote vazio)
+      if (data.semanas?.length) {
+        semanaStore.replaceAll(data.isViewer ? data.semanas : mergeByUpdatedAt(semanaStore.items, data.semanas));
+      }
+      if (data.pontos?.length) {
+        pontoStore.replaceAll(data.isViewer ? data.pontos : mergeByUpdatedAt(pontoStore.items, data.pontos));
+      }
+      if (data.carregamentos?.length) {
+        carregamentoStore.replaceAll(data.isViewer ? data.carregamentos : mergeByUpdatedAt(carregamentoStore.items, data.carregamentos));
+      }
+      if (data.employees?.length) employeeStore.replaceAll(data.employees);
+      if (data.forno && Object.keys(data.forno).length) fornoStore.replaceAll?.(data.forno);
     }
-    if (data.carregamentos?.length) {
-      const merged = data.isViewer ? data.carregamentos : mergeByUpdatedAt(carregamentoStore.items, data.carregamentos);
-      carregamentoStore.replaceAll(merged);
-    }
-    if (data.employees?.length) employeeStore.replaceAll(data.employees);
     if (data.settings && Object.keys(data.settings).length) settingsStore.update(data.settings);
-    if (data.forno && Object.keys(data.forno).length) fornoStore.replaceAll?.(data.forno);
 
+    sessionReady.current = true;
     if (!data.isViewer) scheduleAutoBackup();
+  }
+
+  function switchForno(fornoKey) {
+    setShowFornoPicker(false);
+    sessionReady.current = false; // bloqueia push enquanto troca de forno
+    setActiveForno(fornoKey);
+    syncDown(null, fornoKey, true); // replace=true: não mescla com dados do forno anterior
   }
 
   // ── Backup automático diário ─────────────────────────────────────────────
@@ -109,6 +179,14 @@ export default function App() {
     }, 4000);
   }
 
+  // Mantém adminFornos em sincronia com settings local (sem esperar cloud sync)
+  const settingsFornoList = settingsStore.settings?.fornoList;
+  useEffect(() => {
+    if (!isViewer && !isEditor && settingsFornoList?.length) {
+      setAdminFornos(settingsFornoList);
+    }
+  }, [settingsFornoList, isViewer, isEditor]);
+
   // ── Pull automático: tab visível + reconexão + intervalo de 60s ──────────
   const syncDownRef = useRef(syncDown);
   useEffect(() => { syncDownRef.current = syncDown; });
@@ -133,21 +211,23 @@ export default function App() {
 
   // ── Push: envia dados para a nuvem com debounce de 3s ───────────────────
   const scheduleSync = useCallback(() => {
-    if (!user || isViewer) return;
+    if (!user || isViewer || !sessionReady.current) return;
     clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(async () => {
       setSyncing(true);
       await pushToCloud({
-        semanas:   semanaStore.items,
-        pontos:    pontoStore.items,
-        employees: employeeStore.employees,
-        settings:  settingsStore.settings,
-        forno:     fornoStore.chambers,
+        adminUserId:   dataOwnerId,
+        fornoKey:      activeForno ?? 'cedan',
+        semanas:       semanaStore.items,
+        pontos:        pontoStore.items,
+        employees:     employeeStore.employees,
+        settings:      settingsStore.settings,
+        forno:         fornoStore.chambers,
         carregamentos: carregamentoStore.items,
       });
       setSyncing(false);
     }, 3000);
-  }, [user, isViewer, semanaStore.items, pontoStore.items, employeeStore.employees, settingsStore.settings, fornoStore.chambers, carregamentoStore.items]);
+  }, [user, isViewer, dataOwnerId, activeForno, semanaStore.items, pontoStore.items, employeeStore.employees, settingsStore.settings, fornoStore.chambers, carregamentoStore.items]);
 
   useEffect(() => {
     scheduleSync();
@@ -157,8 +237,18 @@ export default function App() {
   const activeSemanaId = semanaId && semanaStore.getById(semanaId) ? semanaId : null;
   const activePontoId  = pontoId  && pontoStore.getById(pontoId)   ? pontoId  : null;
 
-  // null scopes = admin (access to everything); array = viewer with restricted scopes
-  const hasScope = (mod) => !isViewer || (viewerScopes ?? []).includes(mod);
+  const modulosAtivos = settingsStore.settings?.modulosAtivos ?? null;
+
+  // Opções de forno para o seletor (admin usa adminFornos; viewer/editor usa viewerInvites)
+  const fornoOptions = (isViewer || isEditor)
+    ? viewerInvites.map(inv => ({ key: inv.forno_key ?? 'cedan', label: inv.label ?? inv.forno_key ?? 'Forno' }))
+    : adminFornos;
+
+  const hasScope = (mod) => {
+    if (isViewer || isEditor) return (viewerScopes ?? []).includes(mod);
+    if (modulosAtivos) return modulosAtivos.includes(mod);
+    return true;
+  };
 
   function navigate(mod) {
     if (!hasScope(mod)) return;
@@ -244,6 +334,7 @@ export default function App() {
             isViewer={isViewer}
             onBack={() => setPontoId(null)}
             onUpdateCell={isViewer ? undefined : (empId, dayKey, value, nota) => pontoStore.updateCell(activePontoId, empId, dayKey, value, nota)}
+            onUpdateBonusValor={isViewer ? undefined : (empId, valor) => pontoStore.updateBonusValor(activePontoId, empId, valor)}
             onUpdate={isViewer ? undefined : (patch) => pontoStore.update(activePontoId, patch)}
             onDelete={isViewer ? undefined : () => { pontoStore.remove(activePontoId); setPontoId(null); }}
           />
@@ -300,7 +391,12 @@ export default function App() {
         syncing={syncing}
         userEmail={user.email}
         isViewer={isViewer}
+        isEditor={isEditor}
         viewerScopes={viewerScopes}
+        modulosAtivos={modulosAtivos}
+        fornoOptions={fornoOptions}
+        activeForno={activeForno}
+        onSwitchForno={switchForno}
         onExportBackup={() => exportBackup(semanaStore.items, pontoStore.items, employeeStore.employees, settingsStore.settings, carregamentoStore.items)}
         onImportBackup={() => importRef.current?.click()}
         onOpenSettings={() => setShowSettings(true)}
@@ -311,7 +407,11 @@ export default function App() {
           hidden={!!(activeSemanaId || activePontoId)}
           syncing={syncing}
           isViewer={isViewer}
+          isEditor={isEditor}
           viewerScopes={viewerScopes}
+          fornoOptions={fornoOptions}
+          activeForno={activeForno}
+          onSwitchForno={switchForno}
           onExportBackup={() => exportBackup(semanaStore.items, pontoStore.items, employeeStore.employees, settingsStore.settings, carregamentoStore.items)}
           onImportBackup={() => importRef.current?.click()}
           onOpenSettings={() => setShowSettings(true)}
@@ -319,7 +419,7 @@ export default function App() {
         />
         {renderContent()}
       </main>
-      <BottomNav active={module} onChange={navigate} isViewer={isViewer} viewerScopes={viewerScopes} />
+      <BottomNav active={module} onChange={navigate} isViewer={isViewer} isEditor={isEditor} viewerScopes={viewerScopes} modulosAtivos={modulosAtivos} />
 
       <input ref={importRef} type="file" accept=".json" style={{ display: 'none' }} onChange={handleImport} />
 
@@ -329,8 +429,46 @@ export default function App() {
         settings={settingsStore.settings}
         onSave={settingsStore.update}
         isViewer={isViewer}
+        isEditor={isEditor}
         user={user}
+        adminFornos={adminFornos}
+        activeForno={activeForno}
       />
+
+      {/* Forno picker — aparece quando há múltiplos fornos e nenhum selecionado */}
+      <Modal
+        open={showFornoPicker}
+        onClose={activeForno ? () => setShowFornoPicker(false) : () => {}}
+        title="Selecionar Forno"
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <p style={{ fontSize: 13, color: 'var(--text-dim)', marginBottom: 4 }}>
+            Você tem acesso a múltiplos fornos. Selecione qual deseja visualizar.
+          </p>
+          {fornoOptions.map(opt => (
+            <button
+              key={opt.key}
+              onClick={() => switchForno(opt.key)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '14px 16px', borderRadius: 10, cursor: 'pointer', textAlign: 'left',
+                border: `1px solid ${opt.key === activeForno ? 'var(--accent)' : 'var(--border)'}`,
+                background: opt.key === activeForno ? 'var(--accent-dim)' : 'oklch(17% 0.018 38)',
+                fontFamily: 'var(--font)', transition: 'all 0.15s',
+              }}
+            >
+              <span style={{ fontSize: 15, fontWeight: 700, color: opt.key === activeForno ? 'var(--accent)' : 'var(--text)' }}>
+                {opt.label}
+              </span>
+              {opt.key === activeForno && (
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  Ativo
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </Modal>
 
       {import.meta.env.DEV && (
         <button

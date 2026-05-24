@@ -47,6 +47,12 @@ function ScopeCheckboxes({ value, onChange }) {
   );
 }
 
+const ROLE_LABELS = { viewer: 'Visualizador', editor: 'Editor' };
+const ROLE_COLORS = {
+  viewer: { color: 'oklch(76% 0.17 68)', bg: 'oklch(76% 0.17 68 / 0.12)' },
+  editor: { color: 'oklch(72% 0.18 145)', bg: 'oklch(72% 0.18 145 / 0.12)' },
+};
+
 function ViewerRow({ viewer, onRemove, onUpdateScopes }) {
   const [open, setOpen] = useState(false);
   const [scopes, setScopes] = useState(viewer.scopes ?? DEFAULT_SCOPES);
@@ -60,6 +66,9 @@ function ViewerRow({ viewer, onRemove, onUpdateScopes }) {
     setOpen(false);
   }
 
+  const role = viewer.role ?? 'viewer';
+  const roleStyle = ROLE_COLORS[role] ?? ROLE_COLORS.viewer;
+
   const scopeLabels = (viewer.scopes ?? DEFAULT_SCOPES)
     .map(k => ALL_SCOPES.find(s => s.key === k)?.label)
     .filter(Boolean)
@@ -72,6 +81,28 @@ function ViewerRow({ viewer, onRemove, onUpdateScopes }) {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+            {viewer.label && (
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                {viewer.label}
+              </div>
+            )}
+            <span style={{
+              fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
+              padding: '1px 5px', borderRadius: 3,
+              color: roleStyle.color, background: roleStyle.bg,
+            }}>
+              {ROLE_LABELS[role]}
+            </span>
+            {viewer.forno_key && (
+              <span style={{
+                fontSize: 9, fontFamily: 'var(--font-mono, monospace)', color: 'var(--text-dim)',
+                background: 'oklch(20% 0.01 38)', padding: '1px 5px', borderRadius: 3,
+              }}>
+                {viewer.forno_key}
+              </span>
+            )}
+          </div>
           <div style={{ fontSize: 13, color: 'var(--text)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {viewer.viewer_email}
           </div>
@@ -113,10 +144,115 @@ function ViewerRow({ viewer, onRemove, onUpdateScopes }) {
   );
 }
 
-function ViewerAccessSection({ user }) {
+function toFornoKey(label) {
+  return label.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+    || Date.now().toString(36);
+}
+
+function FornosSection({ adminFornos, onUpdateFornos }) {
+  const [fornos, setFornos] = useState(() => adminFornos?.length ? adminFornos : [{ key: 'cedan', label: '' }]);
+  const [newLabel, setNewLabel] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  async function handleRename(key, label) {
+    const updated = fornos.map(f => f.key === key ? { ...f, label } : f);
+    setFornos(updated);
+  }
+
+  async function handleAdd() {
+    const label = newLabel.trim();
+    if (!label) return;
+    const key = toFornoKey(label);
+    if (fornos.find(f => f.key === key)) return;
+    const updated = [...fornos, { key, label }];
+    setFornos(updated);
+    setNewLabel('');
+  }
+
+  async function handleRemove(key) {
+    if (fornos.length <= 1) return;
+    setFornos(prev => prev.filter(f => f.key !== key));
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    await onUpdateFornos(fornos);
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <p style={{ fontSize: 12, color: 'var(--text-dim)', lineHeight: 1.5 }}>
+        Cada forno tem dados independentes — equipe, ponto e produção separados. Editores e visualizadores são associados a um forno específico.
+      </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {fornos.map(f => (
+          <div key={f.key} style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            background: 'oklch(14% 0.016 38)', border: '1px solid var(--border)',
+            borderRadius: 8, padding: '8px 10px',
+          }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 10, color: 'var(--text-dim)', fontFamily: 'var(--font-mono, monospace)', marginBottom: 4 }}>{f.key}</div>
+              <input
+                value={f.label}
+                onChange={e => handleRename(f.key, e.target.value)}
+                placeholder="Nome do forno"
+                style={{
+                  width: '100%', background: 'transparent', border: 'none', outline: 'none',
+                  fontFamily: 'var(--font)', fontSize: 13, fontWeight: 600, color: 'var(--text)',
+                }}
+              />
+            </div>
+            {fornos.length > 1 && (
+              <button onClick={() => handleRemove(f.key)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--danger)', fontSize: 13, padding: '2px 4px' }}
+                title="Remover forno">✕</button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', gap: 8 }}>
+        <input
+          value={newLabel}
+          onChange={e => setNewLabel(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleAdd()}
+          placeholder="Nome do novo forno"
+          style={{
+            flex: 1, background: 'oklch(14% 0.016 38)', border: '1px solid var(--border)',
+            borderRadius: 6, padding: '6px 10px', fontFamily: 'var(--font)', fontSize: 12,
+            color: 'var(--text)', outline: 'none',
+          }}
+        />
+        <Btn variant="ghost" size="sm" onClick={handleAdd} disabled={!newLabel.trim()}>+ Adicionar</Btn>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Btn variant="primary" size="sm" onClick={handleSave} disabled={saving} style={{ alignSelf: 'flex-start' }}>
+          {saving ? '...' : 'Salvar fornos'}
+        </Btn>
+        {saved && (
+          <span style={{ fontSize: 12, color: 'var(--success)', fontWeight: 600 }}>Salvo ✓</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ViewerAccessSection({ user, adminFornos }) {
   const [viewers, setViewers] = useState([]);
   const [email, setEmail] = useState('');
+  const [newLabel, setNewLabel] = useState('');
   const [newScopes, setNewScopes] = useState(DEFAULT_SCOPES);
+  const [newRole, setNewRole] = useState('viewer');
+  const [newFornoKey, setNewFornoKey] = useState('');
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
@@ -131,7 +267,7 @@ function ViewerAccessSection({ user }) {
     setLoading(true);
     const { data } = await supabase
       .from('viewer_access')
-      .select('id, viewer_email, scopes, created_at')
+      .select('id, viewer_email, label, scopes, role, forno_key, created_at')
       .eq('owner_id', user.id)
       .order('created_at', { ascending: true });
     setViewers(data ?? []);
@@ -140,26 +276,34 @@ function ViewerAccessSection({ user }) {
 
   async function handleAdd() {
     const trimmed = email.trim().toLowerCase();
+    const fornoKey = newFornoKey || adminFornos?.[0]?.key || 'cedan';
     if (!trimmed || newScopes.length === 0) return;
+    if (viewers.some(v => v.viewer_email === trimmed && (v.forno_key ?? 'cedan') === fornoKey)) {
+      setError('Este email já tem acesso a este forno.');
+      return;
+    }
     setAdding(true);
     setError('');
     const { error: err } = await supabase
       .from('viewer_access')
-      .insert({ owner_id: user.id, viewer_email: trimmed, scopes: newScopes });
+      .insert({ owner_id: user.id, viewer_email: trimmed, scopes: newScopes, label: newLabel.trim() || null, role: newRole, forno_key: fornoKey });
     if (err) {
-      setError(err.code === '23505' ? 'Email já possui acesso.' : err.message);
+      setError(err.code === '23505' ? 'Este email já tem acesso a este forno.' : err.message);
     } else {
       setEmail('');
+      setNewLabel('');
       setNewScopes(DEFAULT_SCOPES);
+      setNewRole('viewer');
+      setNewFornoKey('');
       setShowForm(false);
       await fetchViewers();
     }
     setAdding(false);
   }
 
-  function handleRemove(id) {
-    supabase.from('viewer_access').delete().eq('id', id);
-    setViewers(prev => prev.filter(v => v.id !== id));
+  async function handleRemove(id) {
+    const { error } = await supabase.from('viewer_access').delete().eq('id', id);
+    if (!error) setViewers(prev => prev.filter(v => v.id !== id));
   }
 
   function handleUpdateScopes(id, scopes) {
@@ -195,12 +339,71 @@ function ViewerAccessSection({ user }) {
           borderRadius: 8, padding: '12px 12px 14px', display: 'flex', flexDirection: 'column', gap: 12,
         }}>
           <InputRow
-            label="Email do viewer"
+            label="Nome do forno (exibido no seletor)"
+            type="text"
+            value={newLabel}
+            onChange={setNewLabel}
+            placeholder="ex: Forno Contínuo"
+          />
+          <InputRow
+            label="Email"
             type="text"
             value={email}
             onChange={setEmail}
             placeholder="email@exemplo.com"
           />
+          {adminFornos?.length > 1 && (
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+                Forno
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {adminFornos.map(f => {
+                  const active = (newFornoKey || adminFornos[0]?.key) === f.key;
+                  return (
+                    <button key={f.key} type="button" onClick={() => setNewFornoKey(f.key)}
+                      style={{
+                        fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 99, cursor: 'pointer',
+                        fontFamily: 'var(--font)',
+                        border: `1px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
+                        background: active ? 'var(--accent-dim)' : 'transparent',
+                        color: active ? 'var(--accent)' : 'var(--text-dim)',
+                        transition: 'all 0.15s',
+                      }}>
+                      {f.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+              Tipo de acesso
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {[
+                { value: 'viewer', label: 'Visualizador', desc: 'Lê seus dados, sem editar' },
+                { value: 'editor', label: 'Editor', desc: 'Gerencia dados próprios' },
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setNewRole(opt.value)}
+                  style={{
+                    flex: 1, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', textAlign: 'left',
+                    fontFamily: 'var(--font)',
+                    border: `1px solid ${newRole === opt.value ? 'var(--accent)' : 'var(--border)'}`,
+                    background: newRole === opt.value ? 'var(--accent-dim)' : 'transparent',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <div style={{ fontSize: 12, fontWeight: 700, color: newRole === opt.value ? 'var(--accent)' : 'var(--text)' }}>{opt.label}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 2 }}>{opt.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
           <div>
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
               Módulos com acesso
@@ -209,7 +412,7 @@ function ViewerAccessSection({ user }) {
           </div>
           {error && <p style={{ fontSize: 12, color: 'var(--danger)' }}>{error}</p>}
           <div style={{ display: 'flex', gap: 8 }}>
-            <Btn variant="ghost" size="sm" onClick={() => { setShowForm(false); setEmail(''); setNewScopes(DEFAULT_SCOPES); setError(''); }}>
+            <Btn variant="ghost" size="sm" onClick={() => { setShowForm(false); setEmail(''); setNewLabel(''); setNewScopes(DEFAULT_SCOPES); setNewRole('viewer'); setNewFornoKey(''); setError(''); }}>
               Cancelar
             </Btn>
             <Btn variant="primary" size="sm" onClick={handleAdd} disabled={adding || !email.trim() || newScopes.length === 0}>
@@ -230,7 +433,7 @@ function ViewerAccessSection({ user }) {
   );
 }
 
-export default function ConfigModal({ open, onClose, settings, onSave, isViewer, user }) {
+export default function ConfigModal({ open, onClose, settings, onSave, isViewer, isEditor, user, adminFornos, activeForno }) {
   const [form, setForm] = useState(settings);
   const [activeTab, setActiveTab] = useState('empresa');
 
@@ -249,7 +452,8 @@ export default function ConfigModal({ open, onClose, settings, onSave, isViewer,
 
   const tabs = [
     { key: 'empresa', label: 'Empresa' },
-    ...(!isViewer ? [{ key: 'viewers', label: 'Acesso' }] : []),
+    ...(!isViewer && !isEditor ? [{ key: 'fornos', label: 'Fornos' }] : []),
+    ...(!isViewer && !isEditor ? [{ key: 'viewers', label: 'Acesso' }] : []),
   ];
 
   return (
@@ -264,9 +468,7 @@ export default function ConfigModal({ open, onClose, settings, onSave, isViewer,
             <Btn variant="ghost" onClick={onClose}>Cancelar</Btn>
             <Btn variant="primary" onClick={handleSave}>Salvar</Btn>
           </>
-        ) : (
-          <Btn variant="ghost" onClick={onClose}>Fechar</Btn>
-        )
+        ) : <Btn variant="ghost" onClick={onClose}>Fechar</Btn>
       }
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -302,12 +504,37 @@ export default function ConfigModal({ open, onClose, settings, onSave, isViewer,
             <InputRow label="CNPJ" value={form.cnpj} onChange={set('cnpj')} placeholder="00.000.000/0000-00" disabled={isViewer} />
             <InputRow label="Endereço" value={form.endereco} onChange={set('endereco')} placeholder="Endereço completo" disabled={isViewer} />
             <InputRow label="Cidade" value={form.cidade} onChange={set('cidade')} placeholder="Cidade - UF" disabled={isViewer} />
+
+            {!isViewer && !isEditor && (
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 4 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+                  Módulos ativos
+                </div>
+                <ScopeCheckboxes
+                  value={form.modulosAtivos ?? ALL_SCOPES.map(s => s.key)}
+                  onChange={v => setForm(prev => ({ ...prev, modulosAtivos: v.length === ALL_SCOPES.length ? null : v }))}
+                />
+                <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 6 }}>
+                  Desmarque os módulos que não utiliza para simplificar a navegação.
+                </p>
+              </div>
+            )}
           </div>
+        )}
+
+        {/* Tab: Fornos */}
+        {activeTab === 'fornos' && !isViewer && !isEditor && (
+          <FornosSection
+            adminFornos={adminFornos}
+            onUpdateFornos={async (fornoList) => {
+              onSave({ fornoList });
+            }}
+          />
         )}
 
         {/* Tab: Acesso de Viewers */}
         {activeTab === 'viewers' && !isViewer && (
-          <ViewerAccessSection user={user} />
+          <ViewerAccessSection user={user} adminFornos={adminFornos} />
         )}
 
         {/* Sobre */}
@@ -320,14 +547,20 @@ export default function ConfigModal({ open, onClose, settings, onSave, isViewer,
         }}>
           <div>
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>FabricaLog</span>
-            <span style={{ fontSize: 11, color: 'var(--text-dim)', marginLeft: 8 }}>Forno CEDAN</span>
-            {isViewer && (
+            {(() => {
+              const label = adminFornos?.find(f => f.key === activeForno)?.label ?? adminFornos?.[0]?.label;
+              return label ? (
+                <span style={{ fontSize: 11, color: 'var(--text-dim)', marginLeft: 8 }}>{label}</span>
+              ) : null;
+            })()}
+            {(isViewer || isEditor) && (
               <span style={{
                 fontSize: 10, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-                color: 'oklch(76% 0.17 68)', background: 'oklch(76% 0.17 68 / 0.12)',
+                color: isEditor ? 'oklch(72% 0.18 145)' : 'oklch(76% 0.17 68)',
+                background: isEditor ? 'oklch(72% 0.18 145 / 0.12)' : 'oklch(76% 0.17 68 / 0.12)',
                 padding: '2px 6px', borderRadius: 4, marginLeft: 8,
               }}>
-                Modo Visualização
+                {isEditor ? 'Modo Editor' : 'Modo Visualização'}
               </span>
             )}
           </div>

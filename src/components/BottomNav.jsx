@@ -11,10 +11,12 @@ const ITEMS = [
   { key: 'forno',  label: 'Forno',     icon: 'flame' },
 ];
 
-export default function BottomNav({ active, onChange, isViewer, viewerScopes }) {
-  const visibleItems = isViewer && viewerScopes
+export default function BottomNav({ active, onChange, isViewer, isEditor, viewerScopes, modulosAtivos }) {
+  const visibleItems = (isViewer || isEditor) && viewerScopes
     ? ITEMS.filter(item => viewerScopes.includes(item.key))
-    : ITEMS;
+    : modulosAtivos
+      ? ITEMS.filter(item => modulosAtivos.includes(item.key))
+      : ITEMS;
 
   return (
     <nav className={styles.nav}>

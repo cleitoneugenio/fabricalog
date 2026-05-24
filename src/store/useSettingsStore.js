@@ -24,5 +24,9 @@ export function useSettingsStore() {
     setSettings(prev => ({ ...prev, ...patch }));
   }
 
-  return { settings, update };
+  function reset() {
+    setSettings({});
+  }
+
+  return { settings, update, reset };
 }
