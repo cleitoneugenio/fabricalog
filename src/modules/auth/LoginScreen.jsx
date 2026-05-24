@@ -34,7 +34,6 @@ export default function LoginScreen({ onLogin }) {
           <span className={styles.logoText}>FabricaLog</span>
         </div>
 
-        <p className={styles.sub}>Forno CEDAN · Controle de Produção</p>
 
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.field}>

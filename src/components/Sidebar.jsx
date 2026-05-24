@@ -1,4 +1,5 @@
 import Ic from './Ic';
+import FornoToggle from './FornoToggle';
 import styles from './Sidebar.module.css';
 
 const ITEMS = [
@@ -11,10 +12,14 @@ const ITEMS = [
   { key: 'forno',  label: 'Forno',         icon: 'flame' },
 ];
 
-export default function Sidebar({ active, onChange, onExportBackup, onImportBackup, onOpenSettings, onLogout, syncing, userEmail, isViewer, viewerScopes }) {
-  const visibleItems = isViewer && viewerScopes
+export default function Sidebar({ active, onChange, onExportBackup, onImportBackup, onOpenSettings, onLogout, syncing, userEmail, isViewer, isEditor, viewerScopes, modulosAtivos, fornoOptions, activeForno, onSwitchForno }) {
+  const visibleItems = (isViewer || isEditor) && viewerScopes
     ? ITEMS.filter(item => viewerScopes.includes(item.key))
-    : ITEMS;
+    : modulosAtivos
+      ? ITEMS.filter(item => modulosAtivos.includes(item.key))
+      : ITEMS;
+
+  const showFornoSwitcher = fornoOptions?.length > 1;
 
   return (
     <aside className={styles.sidebar}>
@@ -25,14 +30,20 @@ export default function Sidebar({ active, onChange, onExportBackup, onImportBack
         </svg>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
           <span className={styles.logoText}>FabricaLog</span>
-          {isViewer && (
+          {(isViewer || isEditor) && (
             <span style={{
               fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: 'oklch(76% 0.17 68)', background: 'oklch(76% 0.17 68 / 0.12)',
+              color: isEditor ? 'oklch(72% 0.18 145)' : 'oklch(76% 0.17 68)',
+              background: isEditor ? 'oklch(72% 0.18 145 / 0.12)' : 'oklch(76% 0.17 68 / 0.12)',
               padding: '2px 7px', borderRadius: 4, alignSelf: 'flex-start',
             }}>
-              Visualização
+              {isEditor ? 'Editor' : 'Visualização'}
             </span>
+          )}
+          {showFornoSwitcher && (
+            <div style={{ marginTop: 6 }}>
+              <FornoToggle options={fornoOptions} active={activeForno} onChange={onSwitchForno} fullWidth />
+            </div>
           )}
         </div>
       </div>

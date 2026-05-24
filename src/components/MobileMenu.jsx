@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import Ic from './Ic';
+import FornoToggle from './FornoToggle';
 import styles from './MobileMenu.module.css';
 
-export default function MobileMenu({ onExportBackup, onImportBackup, onOpenSettings, onLogout, syncing, hidden, isViewer }) {
+export default function MobileMenu({ onExportBackup, onImportBackup, onOpenSettings, onLogout, syncing, hidden, isViewer, isEditor, fornoOptions, activeForno, onSwitchForno }) {
   const [open, setOpen] = useState(false);
 
   function handle(fn) {
@@ -11,6 +12,8 @@ export default function MobileMenu({ onExportBackup, onImportBackup, onOpenSetti
   }
 
   if (hidden) return null;
+
+  const showFornoSwitcher = fornoOptions?.length > 1;
 
   return (
     <>
@@ -23,14 +26,20 @@ export default function MobileMenu({ onExportBackup, onImportBackup, onOpenSetti
           </svg>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <span className={styles.logoText}>FabricaLog</span>
-            {isViewer && (
+            {(isViewer || isEditor) && (
               <span style={{
                 fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-                color: 'oklch(76% 0.17 68)', background: 'oklch(76% 0.17 68 / 0.12)',
+                color: isEditor ? 'oklch(72% 0.18 145)' : 'oklch(76% 0.17 68)',
+                background: isEditor ? 'oklch(72% 0.18 145 / 0.12)' : 'oklch(76% 0.17 68 / 0.12)',
                 padding: '2px 7px', borderRadius: 4, alignSelf: 'flex-start',
               }}>
-                Visualização
+                {isEditor ? 'Editor' : 'Visualização'}
               </span>
+            )}
+            {showFornoSwitcher && (
+              <div style={{ marginTop: 4 }}>
+                <FornoToggle options={fornoOptions} active={activeForno} onChange={onSwitchForno} fullWidth />
+              </div>
             )}
           </div>
           {syncing && <span style={{ fontSize: 10, color: 'var(--warning)', fontWeight: 700 }}>↑</span>}

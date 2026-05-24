@@ -10,9 +10,10 @@ import { weekLabel, DAY_NAMES } from '../../utils/weekLabel';
 import { formatBRL } from '../../utils/formatBRL';
 import styles from './PontoDetalhe.module.css';
 
-const DAY_KEYS = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
+const DAY_KEYS  = ['seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
 const DAY_SHORT = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const QUICK_VALUES = [35, 40, 75, 80, 110];
+const BONUS_QUICK  = [25, 50];
 
 // ── Mobile bottom sheet editor ───────────────────────────────────────────────
 function MobileEditor({ employee, dayKey, dayLabel, value, nota, onSave, onClose }) {
@@ -21,7 +22,7 @@ function MobileEditor({ employee, dayKey, dayLabel, value, nota, onSave, onClose
   const [showNote, setShowNote] = useState(!!(nota && nota.trim()));
 
   function commit(val) {
-    onSave(val, noteInput.trim()); // pai decide fechar ou avançar
+    onSave(val, noteInput.trim());
   }
 
   return (
@@ -93,8 +94,8 @@ function MobileEditor({ employee, dayKey, dayLabel, value, nota, onSave, onClose
 }
 
 // ── Mobile employee card ──────────────────────────────────────────────────────
-function EmployeeCard({ employee, dias, onEdit, onToggleBonus }) {
-  const { dias: dCount, bonus, bonusEligible, total } = calcPonto(dias);
+function EmployeeCard({ employee, dias, onEdit, onEditBonus }) {
+  const { dias: dCount, bonus, bonusEligible, bonusValor, total } = calcPonto(dias);
   const hasActivity = dCount > 0;
   const bloqueado = !!dias.bonus_bloqueado;
 
@@ -133,12 +134,12 @@ function EmployeeCard({ employee, dias, onEdit, onToggleBonus }) {
       {hasActivity && (
         <div className={styles.empFooter}>
           <span>{dCount} dia{dCount !== 1 ? 's' : ''}</span>
-          {bonusEligible && onToggleBonus && (
+          {bonusEligible && onEditBonus && (
             <button
               className={`${styles.bonusToggle} ${bloqueado ? styles.bonusToggleOff : styles.bonusToggleOn}`}
-              onClick={() => onToggleBonus(employee.id, !bloqueado)}
+              onClick={() => onEditBonus(employee.id, employee.name, bonusValor, bloqueado)}
             >
-              {bloqueado ? '✕ Bônus bloqueado' : `✓ Bônus ${formatBRL(25)}`}
+              {bloqueado ? `✕ Bônus bloqueado` : `✓ Bônus ${formatBRL(bonusValor)}`}
             </button>
           )}
         </div>
@@ -148,7 +149,7 @@ function EmployeeCard({ employee, dias, onEdit, onToggleBonus }) {
 }
 
 // ── Desktop table ─────────────────────────────────────────────────────────────
-function DesktopTable({ ponto, employees, totals, editing, setEditing, onUpdateCell }) {
+function DesktopTable({ ponto, employees, totals, editing, setEditing, onUpdateCell, onOpenBonusEditor }) {
   return (
     <div className={styles.tableWrap}>
       <table className={styles.table}>
@@ -165,7 +166,7 @@ function DesktopTable({ ponto, employees, totals, editing, setEditing, onUpdateC
         <tbody>
           {employees.map((emp, i) => {
             const d = ponto.dias[emp.id] ?? {};
-            const { dias, bonus, bonusEligible, total } = calcPonto(d);
+            const { dias, bonus, bonusEligible, bonusValor, total } = calcPonto(d);
             const bloqueado = !!d.bonus_bloqueado;
             return (
               <tr key={emp.id} className={styles.row}>
@@ -204,12 +205,14 @@ function DesktopTable({ ponto, employees, totals, editing, setEditing, onUpdateC
                 <td className={styles.tdCalc}>{dias}</td>
                 <td
                   className={`${styles.tdCalc} ${bonusEligible ? styles.tdBonusClickable : ''}`}
-                  title={bonusEligible ? (bloqueado ? 'Clique para liberar bônus' : 'Clique para bloquear bônus') : ''}
-                  onClick={bonusEligible ? () => onUpdateCell(emp.id, 'bonus_bloqueado', !bloqueado, undefined) : undefined}
+                  title={bonusEligible ? 'Clique para editar bônus' : ''}
+                  onClick={bonusEligible && onOpenBonusEditor
+                    ? () => onOpenBonusEditor({ empId: emp.id, empName: emp.name, valor: bonusValor, bloqueado })
+                    : undefined}
                 >
                   {bonusEligible ? (
                     <span className={bloqueado ? styles.bonusCellOff : styles.bonusCellOn}>
-                      {bloqueado ? '✕' : '✓'} {formatBRL(25)}
+                      {bloqueado ? '✕' : '✓'} {formatBRL(bonusValor)}
                     </span>
                   ) : (
                     <span style={{ color: 'var(--text-dim)' }}>—</span>
@@ -277,7 +280,7 @@ function RecibosPicker({ ponto, employees, settings, onClose }) {
     }
   }
 
-  const withValue = rows.filter(r => r.total > 0);
+  const withValue    = rows.filter(r => r.total > 0);
   const withoutValue = rows.filter(r => r.total === 0);
   const totalSelecionado = rows
     .filter(r => selected.has(r.emp.id))
@@ -285,7 +288,6 @@ function RecibosPicker({ ponto, employees, settings, onClose }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-      {/* Header de seleção */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <span style={{ fontSize: 12, color: 'var(--text-dim)' }}>
           {selected.size} selecionado{selected.size !== 1 ? 's' : ''} · {formatBRL(totalSelecionado)}
@@ -298,7 +300,6 @@ function RecibosPicker({ ponto, employees, settings, onClose }) {
         </button>
       </div>
 
-      {/* Lista com valor */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 320, overflowY: 'auto' }}>
         {withValue.map(({ emp, total }) => (
           <label
@@ -324,7 +325,6 @@ function RecibosPicker({ ponto, employees, settings, onClose }) {
           </label>
         ))}
 
-        {/* Funcionários sem valor — sempre desmarcados */}
         {withoutValue.length > 0 && (
           <>
             <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '10px 4px 4px' }}>
@@ -339,8 +339,7 @@ function RecibosPicker({ ponto, employees, settings, onClose }) {
                   background: 'oklch(14% 0.016 38)', border: '1px solid var(--border)',
                 }}
               >
-                <input type="checkbox" disabled checked={false}
-                  style={{ width: 15, height: 15, flexShrink: 0 }} />
+                <input type="checkbox" disabled checked={false} style={{ width: 15, height: 15, flexShrink: 0 }} />
                 <span style={{ flex: 1, fontSize: 13, color: 'var(--text-dim)' }}>{emp.name}</span>
                 <span style={{ fontSize: 13, color: 'var(--text-dim)' }}>—</span>
               </div>
@@ -349,7 +348,6 @@ function RecibosPicker({ ponto, employees, settings, onClose }) {
         )}
       </div>
 
-      {/* Actions */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
         <Btn variant="ghost" onClick={onClose}>Cancelar</Btn>
         <Btn variant="primary" onClick={handleGerar} disabled={loading || selected.size === 0}>
@@ -361,27 +359,95 @@ function RecibosPicker({ ponto, employees, settings, onClose }) {
   );
 }
 
+// ── Bonus editor modal content ────────────────────────────────────────────────
+function BonusEditorContent({ empName, initialValor, initialBloqueado, onSave, onToggleBlock, onClose }) {
+  const [valor, setValor] = useState(String(initialValor ?? 25));
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          Valor do bônus
+        </label>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {BONUS_QUICK.map(v => (
+            <button
+              key={v}
+              onClick={() => setValor(String(v))}
+              style={{
+                flex: 1, padding: '8px 0', borderRadius: 6, cursor: 'pointer',
+                fontFamily: 'var(--font)', fontWeight: 700, fontSize: 14,
+                border: `1px solid ${String(valor) === String(v) ? 'var(--accent)' : 'var(--border)'}`,
+                background: String(valor) === String(v) ? 'var(--accent-dim)' : 'oklch(15% 0.016 38)',
+                color: String(valor) === String(v) ? 'var(--accent)' : 'var(--text-dim)',
+                transition: 'all 0.12s',
+              }}
+            >
+              {formatBRL(v)}
+            </button>
+          ))}
+        </div>
+        <input
+          type="number"
+          value={valor}
+          onChange={e => setValor(e.target.value)}
+          style={{
+            background: 'oklch(15% 0.016 38)', border: '1px solid var(--border)',
+            borderRadius: 6, color: 'var(--text)', padding: '9px 12px',
+            fontSize: 14, fontFamily: 'var(--font)', width: '100%',
+          }}
+          placeholder="Valor personalizado..."
+        />
+      </div>
+
+      <button
+        onClick={() => { onToggleBlock(); onClose(); }}
+        style={{
+          padding: '10px 14px', borderRadius: 6, cursor: 'pointer', textAlign: 'left',
+          fontFamily: 'var(--font)', fontWeight: 600, fontSize: 13,
+          border: `1px solid ${initialBloqueado ? 'var(--success)' : 'var(--danger-dim)'}`,
+          background: initialBloqueado ? 'oklch(15% 0.016 38)' : 'var(--danger-dim)',
+          color: initialBloqueado ? 'var(--success)' : 'var(--danger)',
+          transition: 'all 0.12s',
+        }}
+      >
+        {initialBloqueado ? '✓ Liberar bônus' : '✕ Bloquear bônus para este funcionário'}
+      </button>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 4 }}>
+        <Btn variant="ghost" onClick={onClose}>Cancelar</Btn>
+        <Btn variant="primary" onClick={() => { onSave(Number(valor) || 25); onClose(); }}>
+          Salvar
+        </Btn>
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
-export default function PontoDetalhe({ ponto, employees, settings, isViewer, onBack, onUpdateCell, onUpdate, onDelete }) {
-  const [editing, setEditing] = useState(null);
-  const [mobileEdit, setMobileEdit] = useState(null);
-  const [showDelete, setShowDelete] = useState(false);
-  const [showEdit, setShowEdit] = useState(false);
+export default function PontoDetalhe({ ponto, employees, settings, isViewer, onBack, onUpdateCell, onUpdateBonusValor, onUpdate, onDelete }) {
+  const [editing, setEditing]           = useState(null);
+  const [mobileEdit, setMobileEdit]     = useState(null);
+  const [bonusEditor, setBonusEditor]   = useState(null); // { empId, empName, valor, bloqueado }
+  const [showDelete, setShowDelete]     = useState(false);
+  const [showEdit, setShowEdit]         = useState(false);
   const [showRecibosPicker, setShowRecibosPicker] = useState(false);
-  const [editNumero, setEditNumero] = useState(String(ponto.numero));
-  const [editData, setEditData] = useState(ponto.dataInicio);
+  const [editNumero, setEditNumero]     = useState(String(ponto.numero));
+  const [editData, setEditData]         = useState(ponto.dataInicio);
 
   const totals = employees.reduce(
     (acc, emp) => {
       const d = ponto.dias[emp.id] ?? {};
       const { dias, bonus, total } = calcPonto(d);
-      acc.dias += dias;
+      acc.dias  += dias;
       acc.bonus += bonus;
       acc.total += total;
       DAY_KEYS.forEach((k, ki) => {
         const v = d[k];
-        if (v !== 'F' && v !== '' && v != null) acc.days[ki] += Number(v) || 0;
-        if (v !== 'F' && v !== '' && v != null) acc.presence[ki]++;
+        if (v !== 'F' && v !== '' && v != null) {
+          acc.days[ki]     += Number(v) || 0;
+          acc.presence[ki] += 1;
+        }
       });
       return acc;
     },
@@ -389,6 +455,11 @@ export default function PontoDetalhe({ ponto, employees, settings, isViewer, onB
   );
 
   const totalEmp = employees.length || 1;
+
+  function handleOpenBonusEditor({ empId, empName, valor, bloqueado }) {
+    if (isViewer || !onUpdateBonusValor) return;
+    setBonusEditor({ empId, empName, valor, bloqueado });
+  }
 
   return (
     <div className={styles.root} style={{ animation: 'slideUp 0.2s ease' }}>
@@ -463,11 +534,13 @@ export default function PontoDetalhe({ ponto, employees, settings, isViewer, onB
             onEdit={isViewer ? undefined : (employee, key, label, val, nota) =>
               setMobileEdit({ employee, key, label, val, nota })
             }
-            onToggleBonus={isViewer ? undefined : (empId, block) => onUpdateCell(empId, 'bonus_bloqueado', block, undefined)}
+            onEditBonus={isViewer ? undefined : (empId, empName, valor, bloqueado) =>
+              handleOpenBonusEditor({ empId, empName, valor, bloqueado })
+            }
           />
         ))}
         <p className={styles.legend}>
-          <strong>F</strong> = Falta &nbsp;|&nbsp; <strong>Bônus R$25</strong> = 6 dias trabalhados (toque para bloquear individualmente)
+          <strong>F</strong> = Falta &nbsp;|&nbsp; Bônus = Seg–Sex completo + Sáb · toque no bônus para editar &nbsp;|&nbsp; <strong>●</strong> = Nota
         </p>
       </div>
 
@@ -480,9 +553,10 @@ export default function PontoDetalhe({ ponto, employees, settings, isViewer, onB
           editing={isViewer ? null : editing}
           setEditing={isViewer ? () => {} : setEditing}
           onUpdateCell={isViewer ? () => {} : onUpdateCell}
+          onOpenBonusEditor={isViewer ? undefined : handleOpenBonusEditor}
         />
         <p className={styles.legend}>
-          <strong>F</strong> = Falta &nbsp;|&nbsp; <strong>R$ 25</strong> = Bônus automático (6 dias) · clique para bloquear individualmente &nbsp;|&nbsp; <strong>●</strong> = Nota
+          <strong>F</strong> = Falta &nbsp;|&nbsp; Bônus = Seg–Sex completo + Sáb &nbsp;|&nbsp; clique no bônus para editar valor &nbsp;|&nbsp; <strong>●</strong> = Nota
         </p>
       </div>
 
@@ -509,6 +583,24 @@ export default function PontoDetalhe({ ponto, employees, settings, isViewer, onB
           }}
           onClose={() => setMobileEdit(null)}
         />
+      )}
+
+      {/* Bonus editor modal */}
+      {bonusEditor && (
+        <Modal
+          open={!!bonusEditor}
+          onClose={() => setBonusEditor(null)}
+          title={`Bônus — ${bonusEditor.empName}`}
+        >
+          <BonusEditorContent
+            empName={bonusEditor.empName}
+            initialValor={bonusEditor.valor}
+            initialBloqueado={bonusEditor.bloqueado}
+            onSave={(v) => onUpdateBonusValor(bonusEditor.empId, v)}
+            onToggleBlock={() => onUpdateCell(bonusEditor.empId, 'bonus_bloqueado', !bonusEditor.bloqueado, undefined)}
+            onClose={() => setBonusEditor(null)}
+          />
+        </Modal>
       )}
 
       {/* Edit numero/data modal */}
