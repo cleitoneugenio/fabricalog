@@ -40,13 +40,14 @@ export default function Sidebar({ active, onChange, onExportBackup, onImportBack
               {isEditor ? 'Editor' : 'Visualização'}
             </span>
           )}
-          {showFornoSwitcher && (
-            <div style={{ marginTop: 6 }}>
-              <FornoToggle options={fornoOptions} active={activeForno} onChange={onSwitchForno} fullWidth />
-            </div>
-          )}
         </div>
       </div>
+
+      {showFornoSwitcher && (
+        <div style={{ padding: '0 4px 16px', display: 'flex', justifyContent: 'center' }}>
+          <FornoToggle options={fornoOptions} active={activeForno} onChange={onSwitchForno} fullWidth />
+        </div>
+      )}
 
       <nav className={styles.nav}>
         {visibleItems.map(item => (
