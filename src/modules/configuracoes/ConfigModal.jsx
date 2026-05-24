@@ -505,7 +505,7 @@ export default function ConfigModal({ open, onClose, settings, onSave, isViewer,
             <InputRow label="Endereço" value={form.endereco} onChange={set('endereco')} placeholder="Endereço completo" disabled={isViewer} />
             <InputRow label="Cidade" value={form.cidade} onChange={set('cidade')} placeholder="Cidade - UF" disabled={isViewer} />
 
-            {isViewer && fornoOptions?.length > 1 && (
+            {fornoOptions?.length > 1 && (
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 4 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
                   Forno ativo
