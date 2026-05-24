@@ -150,9 +150,18 @@ export default function App() {
 
   function switchForno(fornoKey) {
     setShowFornoPicker(false);
-    sessionReady.current = false; // bloqueia push enquanto troca de forno
+    sessionReady.current = false;
     setActiveForno(fornoKey);
-    syncDown(null, fornoKey, true); // replace=true: não mescla com dados do forno anterior
+    // Limpa imediatamente para que o usuário veja a troca antes do sync completar
+    semanaStore.replaceAll([]);
+    pontoStore.replaceAll([]);
+    carregamentoStore.replaceAll([]);
+    employeeStore.replaceAll([]);
+    fornoStore.replaceAll?.({});
+    setSyncing(true);
+    syncDown(null, fornoKey, true)
+      .catch(err => { sessionReady.current = true; alert('Erro ao trocar forno: ' + (err?.message ?? err)); })
+      .finally(() => setSyncing(false));
   }
 
   // ── Backup automático diário ─────────────────────────────────────────────
