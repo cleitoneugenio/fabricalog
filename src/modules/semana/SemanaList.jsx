@@ -61,12 +61,16 @@ export default function SemanaList({ semanas, onCreate, onSelect, isViewer }) {
     });
   }
 
+  const [creating, setCreating] = useState(false);
+
   function handleCreate() {
-    if (numero === '' || numero === undefined || !dataInicio) return;
+    if (numero === '' || numero === undefined || !dataInicio || creating) return;
+    setCreating(true);
     onCreate({ numero: Number(numero), dataInicio, meta: 10 });
     setOpen(false);
     setNumero('');
     setDataInicio(new Date().toISOString().split('T')[0]);
+    setTimeout(() => setCreating(false), 2000);
   }
 
   return (
@@ -126,8 +130,8 @@ export default function SemanaList({ semanas, onCreate, onSelect, isViewer }) {
         footer={
           <>
             <Btn variant="ghost" onClick={() => setOpen(false)}>Cancelar</Btn>
-            <Btn variant="primary" onClick={handleCreate} disabled={!numero || !dataInicio}>
-              Criar Semana
+            <Btn variant="primary" onClick={handleCreate} disabled={!numero || !dataInicio || creating}>
+              {creating ? 'Criando...' : 'Criar Semana'}
             </Btn>
           </>
         }
