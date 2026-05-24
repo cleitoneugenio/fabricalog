@@ -345,7 +345,7 @@ export default function App() {
           pontos={pontoStore.items}
           employees={employeeStore.employees}
           isViewer={isViewer}
-          onCreate={isViewer ? undefined : (partial) => { const id = pontoStore.create(partial, employeeStore.employees); setPontoId(id); }}
+          onCreate={isViewer ? undefined : (partial) => { const id = pontoStore.create(partial, employeeStore.activeEmployees); setPontoId(id); }}
           onSelect={setPontoId}
         />
       );
@@ -376,6 +376,7 @@ export default function App() {
           onAdd={isViewer ? undefined : employeeStore.add}
           onRename={isViewer ? undefined : employeeStore.rename}
           onRemove={isViewer ? undefined : employeeStore.remove}
+          onReactivate={isViewer ? undefined : employeeStore.reactivate}
         />
       );
     }
