@@ -433,7 +433,7 @@ function ViewerAccessSection({ user, adminFornos }) {
   );
 }
 
-export default function ConfigModal({ open, onClose, settings, onSave, isViewer, isEditor, user, adminFornos, activeForno }) {
+export default function ConfigModal({ open, onClose, settings, onSave, isViewer, isEditor, user, adminFornos, activeForno, fornoOptions, onSwitchForno }) {
   const [form, setForm] = useState(settings);
   const [activeTab, setActiveTab] = useState('empresa');
 
@@ -504,6 +504,40 @@ export default function ConfigModal({ open, onClose, settings, onSave, isViewer,
             <InputRow label="CNPJ" value={form.cnpj} onChange={set('cnpj')} placeholder="00.000.000/0000-00" disabled={isViewer} />
             <InputRow label="Endereço" value={form.endereco} onChange={set('endereco')} placeholder="Endereço completo" disabled={isViewer} />
             <InputRow label="Cidade" value={form.cidade} onChange={set('cidade')} placeholder="Cidade - UF" disabled={isViewer} />
+
+            {isViewer && fornoOptions?.length > 1 && (
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 4 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+                  Forno ativo
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {fornoOptions.map(opt => {
+                    const isActive = opt.value === activeForno;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => { onSwitchForno(opt.value); onClose(); }}
+                        style={{
+                          fontSize: 13, fontWeight: 700, padding: '8px 18px', borderRadius: 8,
+                          cursor: 'pointer', fontFamily: 'var(--font)',
+                          border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}`,
+                          background: isActive ? 'var(--accent-dim)' : 'oklch(14% 0.016 38)',
+                          color: isActive ? 'var(--accent)' : 'var(--text-dim)',
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        {isActive && <span style={{ marginRight: 6 }}>✓</span>}
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 8, lineHeight: 1.5 }}>
+                  Troque para ver os dados de outro forno.
+                </p>
+              </div>
+            )}
 
             {!isViewer && !isEditor && (
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 4 }}>

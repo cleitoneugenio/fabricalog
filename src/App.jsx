@@ -409,10 +409,6 @@ export default function App() {
           syncing={syncing}
           isViewer={isViewer}
           isEditor={isEditor}
-          viewerScopes={viewerScopes}
-          fornoOptions={fornoOptions}
-          activeForno={activeForno}
-          onSwitchForno={switchForno}
           onExportBackup={() => exportBackup(semanaStore.items, pontoStore.items, employeeStore.employees, settingsStore.settings, carregamentoStore.items)}
           onImportBackup={() => importRef.current?.click()}
           onOpenSettings={() => setShowSettings(true)}
@@ -434,6 +430,8 @@ export default function App() {
         user={user}
         adminFornos={adminFornos}
         activeForno={activeForno}
+        fornoOptions={fornoOptions}
+        onSwitchForno={switchForno}
       />
 
       {/* Forno picker — aparece quando há múltiplos fornos e nenhum selecionado */}
