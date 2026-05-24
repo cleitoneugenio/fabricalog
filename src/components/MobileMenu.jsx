@@ -18,35 +18,37 @@ export default function MobileMenu({ onExportBackup, onImportBackup, onOpenSetti
   return (
     <>
       {/* Cabeçalho mobile */}
-      <header className={styles.header}>
-        <div className={styles.logo}>
-          <svg width="30" height="30" viewBox="0 0 64 64" fill="none" style={{ flexShrink: 0 }}>
-            <rect width="64" height="64" rx="16" fill="oklch(65% 0.19 38)"/>
-            <path d="M6 56 L6 40 L14 40 L14 26 L20 26 L20 36 L28 36 L28 20 L34 20 L34 30 L44 30 L44 14 L50 14 L50 26 L58 26 L58 56 Z" fill="white"/>
-          </svg>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span className={styles.logoText}>FabricaLog</span>
-            {(isViewer || isEditor) && (
-              <span style={{
-                fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-                color: isEditor ? 'oklch(72% 0.18 145)' : 'oklch(76% 0.17 68)',
-                background: isEditor ? 'oklch(72% 0.18 145 / 0.12)' : 'oklch(76% 0.17 68 / 0.12)',
-                padding: '2px 7px', borderRadius: 4, alignSelf: 'flex-start',
-              }}>
-                {isEditor ? 'Editor' : 'Visualização'}
-              </span>
-            )}
-            {showFornoSwitcher && (
-              <div style={{ marginTop: 4 }}>
-                <FornoToggle options={fornoOptions} active={activeForno} onChange={onSwitchForno} fullWidth />
-              </div>
-            )}
+      <header className={styles.header} style={{ flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className={styles.logo}>
+            <svg width="30" height="30" viewBox="0 0 64 64" fill="none" style={{ flexShrink: 0 }}>
+              <rect width="64" height="64" rx="16" fill="oklch(65% 0.19 38)"/>
+              <path d="M6 56 L6 40 L14 40 L14 26 L20 26 L20 36 L28 36 L28 20 L34 20 L34 30 L44 30 L44 14 L50 14 L50 26 L58 26 L58 56 Z" fill="white"/>
+            </svg>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <span className={styles.logoText}>FabricaLog</span>
+              {(isViewer || isEditor) && (
+                <span style={{
+                  fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
+                  color: isEditor ? 'oklch(72% 0.18 145)' : 'oklch(76% 0.17 68)',
+                  background: isEditor ? 'oklch(72% 0.18 145 / 0.12)' : 'oklch(76% 0.17 68 / 0.12)',
+                  padding: '2px 7px', borderRadius: 4, alignSelf: 'flex-start',
+                }}>
+                  {isEditor ? 'Editor' : 'Visualização'}
+                </span>
+              )}
+            </div>
+            {syncing && <span style={{ fontSize: 10, color: 'var(--warning)', fontWeight: 700 }}>↑</span>}
           </div>
-          {syncing && <span style={{ fontSize: 10, color: 'var(--warning)', fontWeight: 700 }}>↑</span>}
+          <button className={styles.menuBtn} onClick={() => setOpen(true)}>
+            <Ic name="more" size={20} />
+          </button>
         </div>
-        <button className={styles.menuBtn} onClick={() => setOpen(true)}>
-          <Ic name="more" size={20} />
-        </button>
+        {showFornoSwitcher && (
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <FornoToggle options={fornoOptions} active={activeForno} onChange={onSwitchForno} />
+          </div>
+        )}
       </header>
 
       {/* Overlay */}
