@@ -435,7 +435,12 @@ export default function PontoDetalhe({ ponto, employees, settings, isViewer, onB
   const [editNumero, setEditNumero]     = useState(String(ponto.numero));
   const [editData, setEditData]         = useState(ponto.dataInicio);
 
-  const totals = employees.reduce(
+  const displayEmployees = employees.filter(emp =>
+    emp.ativo !== false ||
+    Object.entries(ponto.dias[emp.id] ?? {}).some(([k, v]) => !k.endsWith('_nota') && v !== '' && v != null)
+  );
+
+  const totals = displayEmployees.reduce(
     (acc, emp) => {
       const d = ponto.dias[emp.id] ?? {};
       const { dias, bonus, total } = calcPonto(d);
@@ -454,7 +459,7 @@ export default function PontoDetalhe({ ponto, employees, settings, isViewer, onB
     { dias: 0, bonus: 0, total: 0, days: [0, 0, 0, 0, 0, 0], presence: [0, 0, 0, 0, 0, 0] }
   );
 
-  const totalEmp = employees.length || 1;
+  const totalEmp = displayEmployees.length || 1;
 
   function handleOpenBonusEditor({ empId, empName, valor, bloqueado }) {
     if (isViewer || !onUpdateBonusValor) return;
@@ -473,7 +478,7 @@ export default function PontoDetalhe({ ponto, employees, settings, isViewer, onB
           <span className={styles.sub}>Controle de Ponto — Forno CEDAN</span>
         </div>
         <div className={styles.actions}>
-          <Btn variant="ghost" size="sm" onClick={() => exportPonto(ponto, employees).catch(err => alert(`Erro ao exportar: ${err.message}`))}>
+          <Btn variant="ghost" size="sm" onClick={() => exportPonto(ponto, displayEmployees).catch(err => alert(`Erro ao exportar: ${err.message}`))}>
             <Ic name="download" size={14} /> <span className={styles.btnLabel}>Exportar</span>
           </Btn>
           <Btn variant="primary" size="sm" onClick={() => setShowRecibosPicker(true)}>
@@ -526,7 +531,7 @@ export default function PontoDetalhe({ ponto, employees, settings, isViewer, onB
 
       {/* Mobile: card list */}
       <div className={styles.mobileList}>
-        {employees.map(emp => (
+        {displayEmployees.map(emp => (
           <EmployeeCard
             key={emp.id}
             employee={emp}
@@ -548,7 +553,7 @@ export default function PontoDetalhe({ ponto, employees, settings, isViewer, onB
       <div className={styles.desktopTable}>
         <DesktopTable
           ponto={ponto}
-          employees={employees}
+          employees={displayEmployees}
           totals={totals}
           editing={isViewer ? null : editing}
           setEditing={isViewer ? () => {} : setEditing}
@@ -571,8 +576,8 @@ export default function PontoDetalhe({ ponto, employees, settings, isViewer, onB
           nota={mobileEdit.nota}
           onSave={(v, n) => {
             onUpdateCell(mobileEdit.employee.id, mobileEdit.key, v, n);
-            const idx = employees.findIndex(e => e.id === mobileEdit.employee.id);
-            const next = employees[idx + 1];
+            const idx = displayEmployees.findIndex(e => e.id === mobileEdit.employee.id);
+            const next = displayEmployees[idx + 1];
             if (next) {
               const d = ponto.dias[next.id] ?? {};
               const dayIdx = DAY_KEYS.indexOf(mobileEdit.key);
@@ -657,7 +662,7 @@ export default function PontoDetalhe({ ponto, employees, settings, isViewer, onB
       >
         <RecibosPicker
           ponto={ponto}
-          employees={employees}
+          employees={displayEmployees}
           settings={settings}
           onClose={() => setShowRecibosPicker(false)}
         />

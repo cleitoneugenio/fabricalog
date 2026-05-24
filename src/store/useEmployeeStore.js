@@ -27,12 +27,18 @@ export function useEmployeeStore() {
   }
 
   function remove(id) {
-    setEmployees(prev => prev.filter(e => e.id !== id));
+    setEmployees(prev => prev.map(e => e.id === id ? { ...e, ativo: false } : e));
+  }
+
+  function reactivate(id) {
+    setEmployees(prev => prev.map(e => e.id === id ? { ...e, ativo: true } : e));
   }
 
   function replaceAll(newEmployees) {
     setEmployees(newEmployees.map(e => ({ ...e })));
   }
 
-  return { employees, add, rename, remove, replaceAll };
+  const activeEmployees = employees.filter(e => e.ativo !== false);
+
+  return { employees, activeEmployees, add, rename, remove, reactivate, replaceAll };
 }
