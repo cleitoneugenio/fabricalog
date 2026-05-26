@@ -1,4 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Fonts bundled locally — funciona offline e no APK Android */
+@import '@fontsource/syne/400.css';
+@import '@fontsource/syne/500.css';
+@import '@fontsource/syne/600.css';
+@import '@fontsource/syne/700.css';
+@import '@fontsource/syne/800.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
 
 :root {
   /* ── Core Palette ─────────────────────────── */
