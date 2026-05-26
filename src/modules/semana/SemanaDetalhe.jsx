@@ -67,6 +67,7 @@ export default function SemanaDetalhe({ semana, carregamentos, isViewer, onBack,
   const totalVendas    = dias.reduce((acc, d) => acc + (Number(d.vendas)  || 0), 0);
   const totalEstoque   = dias.reduce((acc, d) => acc + (Number(d.estoque) || 0), 0);
   const totalMilheiros = totalVendas + totalEstoque;
+  const totalLuvas     = dias.reduce((acc, d) => acc + (Number(d.luvas)   || 0), 0);
   const metaOk = totalFornos >= semana.meta;
   const past   = isWeekPast(semana);
 
@@ -131,6 +132,13 @@ export default function SemanaDetalhe({ semana, carregamentos, isViewer, onBack,
           <span className={styles.totalLabel}>Fornos enformados</span>
           <span className={styles.totalVal}>{totalFornos}</span>
         </div>
+        {totalLuvas > 0 && (
+          <div className={styles.total}>
+            <span className={styles.totalLabel}>Luvas usadas</span>
+            <span className={styles.totalVal}>{totalLuvas}</span>
+            <span className={styles.totalSub}>pares na semana</span>
+          </div>
+        )}
       </div>
 
       {/* Day pills */}

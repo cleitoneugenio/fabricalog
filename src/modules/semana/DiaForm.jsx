@@ -75,6 +75,7 @@ export default function DiaForm({ dia, onChange, readOnly }) {
         {QUALIDADE_OPTS.map(o => <option key={o} value={o}>{o}</option>)}
       </InputRow>
       <InputRow label="Qtd. Funcionários" type="number" value={dia.qtdFunc} onChange={set('qtdFunc')} placeholder="0" disabled={readOnly} />
+      <InputRow label="Pares de Luvas" type="number" value={dia.luvas} onChange={set('luvas')} placeholder="0" disabled={readOnly} />
       <InputRow label="Estoque (milheiros)" type="number" value={dia.estoque} onChange={set('estoque')} placeholder="0" disabled={readOnly} />
       <InputRow label="Vendas (milheiros)" type="number" value={dia.vendas} onChange={set('vendas')} placeholder="0.0" disabled={readOnly} />
       <InputRow label="Galpão (mi)" type="number" value={dia.emCaminhoes} onChange={set('emCaminhoes')} placeholder="0.0" disabled={readOnly} />
