@@ -12,6 +12,32 @@ function isValidEmployee(e) {
   return e && typeof e.id === 'string' && typeof e.name === 'string';
 }
 
+/**
+ * Valida e retorna um objeto de backup já parseado.
+ * Função pura — sem dependência de FileReader. Testável em Node/vitest.
+ * @throws {Error} mensagem descritiva em caso de formato inválido
+ */
+export function parseBackupData(data) {
+  if (!Array.isArray(data.semanas) || !Array.isArray(data.pontos)) {
+    throw new Error('Formato de backup inválido');
+  }
+  if (!data.semanas.every(isValidSemana)) {
+    throw new Error('Semanas com formato inválido no backup');
+  }
+  if (!data.pontos.every(isValidPonto)) {
+    throw new Error('Pontos com formato inválido no backup');
+  }
+  if (data.employees !== undefined) {
+    if (!Array.isArray(data.employees) || !data.employees.every(isValidEmployee)) {
+      throw new Error('Funcionários com formato inválido no backup');
+    }
+  }
+  if (data.carregamentos !== undefined && !Array.isArray(data.carregamentos)) {
+    throw new Error('Carregamentos com formato inválido no backup');
+  }
+  return data;
+}
+
 export async function exportBackup(semanas, pontos, employees, settings, carregamentos = [], { silent = false } = {}) {
   const { saveFile } = await import('./saveFile.js');
   const payload = JSON.stringify({
@@ -34,29 +60,9 @@ export function parseBackupFile(file) {
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target.result);
-
-        if (!Array.isArray(data.semanas) || !Array.isArray(data.pontos)) {
-          reject(new Error('Formato de backup inválido')); return;
-        }
-        if (!data.semanas.every(isValidSemana)) {
-          reject(new Error('Semanas com formato inválido no backup')); return;
-        }
-        if (!data.pontos.every(isValidPonto)) {
-          reject(new Error('Pontos com formato inválido no backup')); return;
-        }
-        if (data.employees !== undefined) {
-          if (!Array.isArray(data.employees) || !data.employees.every(isValidEmployee)) {
-            reject(new Error('Funcionários com formato inválido no backup')); return;
-          }
-        }
-
-        if (data.carregamentos !== undefined && !Array.isArray(data.carregamentos)) {
-            reject(new Error('Carregamentos com formato inválido no backup')); return;
-          }
-
-        resolve(data);
-      } catch {
-        reject(new Error('Arquivo JSON inválido'));
+        resolve(parseBackupData(data));
+      } catch (err) {
+        reject(err instanceof Error ? err : new Error('Arquivo JSON inválido'));
       }
     };
     reader.onerror = () => reject(new Error('Erro ao ler arquivo'));

@@ -269,7 +269,8 @@ function ViewerAccessSection({ user, adminFornos }) {
       .from('viewer_access')
       .select('id, viewer_email, label, scopes, role, forno_key, created_at')
       .eq('owner_id', user.id)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: true })
+      .limit(100);
     setViewers(data ?? []);
     setLoading(false);
   }
@@ -500,10 +501,10 @@ export default function ConfigModal({ open, onClose, settings, onSave, isViewer,
             <p style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 4 }}>
               Dados usados nos recibos de prestação de serviço.
             </p>
-            <InputRow label="Razão Social" value={form.empresa} onChange={set('empresa')} placeholder="Nome da empresa" disabled={isViewer} />
-            <InputRow label="CNPJ" value={form.cnpj} onChange={set('cnpj')} placeholder="00.000.000/0000-00" disabled={isViewer} />
-            <InputRow label="Endereço" value={form.endereco} onChange={set('endereco')} placeholder="Endereço completo" disabled={isViewer} />
-            <InputRow label="Cidade" value={form.cidade} onChange={set('cidade')} placeholder="Cidade - UF" disabled={isViewer} />
+            <InputRow label="Razão Social" value={form.empresa} onChange={set('empresa')} placeholder="Nome da empresa" disabled={isViewer || isEditor} />
+            <InputRow label="CNPJ" value={form.cnpj} onChange={set('cnpj')} placeholder="00.000.000/0000-00" disabled={isViewer || isEditor} />
+            <InputRow label="Endereço" value={form.endereco} onChange={set('endereco')} placeholder="Endereço completo" disabled={isViewer || isEditor} />
+            <InputRow label="Cidade" value={form.cidade} onChange={set('cidade')} placeholder="Cidade - UF" disabled={isViewer || isEditor} />
 
             {fornoOptions?.length > 1 && (
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: 12, marginTop: 4 }}>

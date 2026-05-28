@@ -179,7 +179,11 @@ export default function App() {
       settings:      settingsStore.settings,
       forno:         fornoStore.chambers,
       carregamentos: carregamentoStore.items,
-    }).catch(() => {});
+    }).then(ok => {
+      if (ok === false) localStorage.setItem('fabricalog_push_pending', '1');
+    }).catch(() => {
+      localStorage.setItem('fabricalog_push_pending', '1');
+    });
 
     setActiveForno(fornoKey);
     // Limpa imediatamente para que o usuário veja a troca antes do sync completar
@@ -265,7 +269,8 @@ export default function App() {
           semanas:       semanaStore.items,
           pontos:        pontoStore.items,
           employees:     employeeStore.employees,
-          settings:      settingsStore.settings,
+          // Editors não sobrescrevem settings do admin (empresa, CNPJ, fornoList)
+          settings:      isEditor ? undefined : settingsStore.settings,
           forno:         fornoStore.chambers,
           carregamentos: carregamentoStore.items,
         });

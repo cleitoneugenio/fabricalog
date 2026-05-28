@@ -12,11 +12,14 @@ function ocorrenciaRows(dias) {
 }
 
 export async function exportSemana(semana) {
-  const XLSX = await import('xlsx');
+  const ExcelJS = (await import('exceljs')).default;
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet(`Semana ${semana.numero}`);
+
   const label = weekLabel(semana);
   const header = ['CATEGORIA', ...DAY_FULL_NAMES, 'TOTAL'];
 
-  const rows = [
+  const allRows = [
     [`CONTROLE SEMANAL DE PRODUÇÃO — FORNO CEDAN`],
     [`Semana: ${semana.numero} (${label})`],
     [],
@@ -28,6 +31,7 @@ export async function exportSemana(semana) {
     row('Qual. do Tijolo',     semana.dias, 'qualidade'),
     row('Estoque (Milheiros)', semana.dias, 'estoque'),
     row('Vendas (Milheiros)',  semana.dias, 'vendas'),
+    row('Pares de Luvas',      semana.dias, 'luvas'),
     row('Fornos Desocupados',  semana.dias, 'fornosDesocupados'),
     row('Reforma',             semana.dias, 'reforma'),
     row('Qtd. Funcionários',   semana.dias, 'qtdFunc'),
@@ -35,14 +39,18 @@ export async function exportSemana(semana) {
     ['Meta (Fornos)', ...Array(6).fill(''), semana.meta],
   ];
 
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = [{ wch: 22 }, ...Array(6).fill({ wch: 18 }), { wch: 10 }];
+  allRows.forEach(r => ws.addRow(r));
 
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, `Semana ${semana.numero}`);
+  ws.columns = [
+    { width: 22 },
+    ...Array(6).fill({ width: 18 }),
+    { width: 10 },
+  ];
 
   const { saveFile } = await import('../../utils/saveFile.js');
-  const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
   await saveFile(blob, `fabricalog-semana-${semana.numero}.xlsx`);
 }
