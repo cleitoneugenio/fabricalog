@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { storage } from './storage';
 import { EMPLOYEES as INITIAL } from '../data/employees';
+import { now } from '../utils/syncMerge';
 
 export function useEmployeeStore() {
   const [employees, setEmployees] = useState(() => {
@@ -17,21 +18,21 @@ export function useEmployeeStore() {
   function add(name) {
     const trimmed = name.trim();
     if (!trimmed) return;
-    setEmployees(prev => [...prev, { id: crypto.randomUUID(), name: trimmed }]);
+    setEmployees(prev => [...prev, { id: crypto.randomUUID(), name: trimmed, updatedAt: now() }]);
   }
 
   function rename(id, name) {
     const trimmed = name.trim();
     if (!trimmed) return;
-    setEmployees(prev => prev.map(e => e.id === id ? { ...e, name: trimmed } : e));
+    setEmployees(prev => prev.map(e => e.id === id ? { ...e, name: trimmed, updatedAt: now() } : e));
   }
 
   function remove(id) {
-    setEmployees(prev => prev.map(e => e.id === id ? { ...e, ativo: false } : e));
+    setEmployees(prev => prev.map(e => e.id === id ? { ...e, ativo: false, updatedAt: now() } : e));
   }
 
   function reactivate(id) {
-    setEmployees(prev => prev.map(e => e.id === id ? { ...e, ativo: true } : e));
+    setEmployees(prev => prev.map(e => e.id === id ? { ...e, ativo: true, updatedAt: now() } : e));
   }
 
   function replaceAll(newEmployees) {

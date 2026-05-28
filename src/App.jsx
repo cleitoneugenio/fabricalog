@@ -25,6 +25,7 @@ import { exportBackup, parseBackupFile } from './utils/backup';
 import { supabase } from './lib/supabase';
 import { pushToCloud, pullFromCloud } from './lib/sync';
 import { mergeByUpdatedAt } from './utils/syncMerge';
+import { storage } from './store/storage';
 
 export default function App() {
   const [module, setModule]           = useState('dash');
@@ -44,6 +45,7 @@ export default function App() {
   const [syncing, setSyncing]           = useState(false);
   const importRef = useRef();
   const syncTimer = useRef(null);
+  const scheduleSyncRef = useRef(null);
   const autoBackupDone = useRef(false);
   const sessionReady = useRef(false); // bloqueia push durante troca de usuário
 
@@ -65,6 +67,7 @@ export default function App() {
 
   function clearLocalStores() {
     sessionReady.current = false;
+    clearTimeout(syncTimer.current); // previne push fantasma após logout
     clearDataStores();
     settingsStore.reset();
     setIsViewer(false);
@@ -139,18 +142,45 @@ export default function App() {
       if (data.carregamentos?.length) {
         carregamentoStore.replaceAll(data.isViewer ? data.carregamentos : mergeByUpdatedAt(carregamentoStore.items, data.carregamentos));
       }
-      if (data.employees?.length) employeeStore.replaceAll(data.employees);
+      if (data.employees?.length) {
+        employeeStore.replaceAll(data.isViewer ? data.employees : mergeByUpdatedAt(employeeStore.employees, data.employees));
+      }
       if (data.forno && Object.keys(data.forno).length) fornoStore.replaceAll?.(data.forno);
     }
     if (data.settings && Object.keys(data.settings).length) settingsStore.update(data.settings);
 
     sessionReady.current = true;
-    if (!data.isViewer) scheduleAutoBackup();
+    if (!data.isViewer) {
+      scheduleAutoBackup();
+      // Garante push de qualquer dado local que não chegou à nuvem (ex: editado offline)
+      scheduleSyncRef.current?.();
+    }
   }
 
   function switchForno(fornoKey) {
     setShowFornoPicker(false);
     sessionReady.current = false;
+    clearTimeout(syncTimer.current); // cancela push pendente da sessão anterior
+
+    // Flush síncrono para localStorage (evita race com debounce de 400ms)
+    storage.saveNow('semanas',       semanaStore.items);
+    storage.saveNow('pontos',        pontoStore.items);
+    storage.saveNow('carregamentos', carregamentoStore.items);
+    storage.saveNow('employees',     employeeStore.employees);
+    storage.saveNow('forno',         fornoStore.chambers);
+
+    // Push imediato do forno atual antes de trocar (fire-and-forget — dado já está no localStorage)
+    pushToCloud({
+      adminUserId:   dataOwnerId,
+      fornoKey:      activeForno ?? 'cedan',
+      semanas:       semanaStore.items,
+      pontos:        pontoStore.items,
+      employees:     employeeStore.employees,
+      settings:      settingsStore.settings,
+      forno:         fornoStore.chambers,
+      carregamentos: carregamentoStore.items,
+    }).catch(() => {});
+
     setActiveForno(fornoKey);
     // Limpa imediatamente para que o usuário veja a troca antes do sync completar
     semanaStore.replaceAll([]);
@@ -199,13 +229,17 @@ export default function App() {
   // ── Pull automático: tab visível + reconexão + intervalo de 60s ──────────
   const syncDownRef = useRef(syncDown);
   useEffect(() => { syncDownRef.current = syncDown; });
+  useEffect(() => { scheduleSyncRef.current = scheduleSync; }, [scheduleSync]);
 
   useEffect(() => {
     if (!user) return;
     const onVisible = () => {
       if (document.visibilityState === 'visible') syncDownRef.current();
     };
-    const onOnline = () => syncDownRef.current();
+    const onOnline = () => {
+      // Pull primeiro, depois push — garante que dados offline cheguem à nuvem
+      syncDownRef.current().then(() => scheduleSyncRef.current?.());
+    };
     document.addEventListener('visibilitychange', onVisible);
     window.addEventListener('online', onOnline);
     const interval = setInterval(() => {
@@ -224,17 +258,27 @@ export default function App() {
     clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(async () => {
       setSyncing(true);
-      await pushToCloud({
-        adminUserId:   dataOwnerId,
-        fornoKey:      activeForno ?? 'cedan',
-        semanas:       semanaStore.items,
-        pontos:        pontoStore.items,
-        employees:     employeeStore.employees,
-        settings:      settingsStore.settings,
-        forno:         fornoStore.chambers,
-        carregamentos: carregamentoStore.items,
-      });
-      setSyncing(false);
+      try {
+        const ok = await pushToCloud({
+          adminUserId:   dataOwnerId,
+          fornoKey:      activeForno ?? 'cedan',
+          semanas:       semanaStore.items,
+          pontos:        pontoStore.items,
+          employees:     employeeStore.employees,
+          settings:      settingsStore.settings,
+          forno:         fornoStore.chambers,
+          carregamentos: carregamentoStore.items,
+        });
+        if (ok !== false) {
+          localStorage.removeItem('fabricalog_push_pending');
+        } else {
+          localStorage.setItem('fabricalog_push_pending', '1');
+        }
+      } catch {
+        localStorage.setItem('fabricalog_push_pending', '1');
+      } finally {
+        setSyncing(false);
+      }
     }, 3000);
   }, [user, isViewer, dataOwnerId, activeForno, semanaStore.items, pontoStore.items, employeeStore.employees, settingsStore.settings, fornoStore.chambers, carregamentoStore.items]);
 

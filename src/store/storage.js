@@ -20,6 +20,16 @@ export const storage = {
       }
     }, 400);
   },
+  // Flush síncrono — cancela o debounce pendente e escreve imediatamente
+  saveNow(key, value) {
+    clearTimeout(timers[key]);
+    delete timers[key];
+    try {
+      localStorage.setItem(PREFIX + key, JSON.stringify(value));
+    } catch (e) {
+      if (import.meta.env.DEV) console.warn('storage.saveNow failed', e);
+    }
+  },
   clear(key) {
     localStorage.removeItem(PREFIX + key);
   },

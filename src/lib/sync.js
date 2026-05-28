@@ -21,10 +21,16 @@ export async function pushToCloud({ adminUserId, fornoKey, semanas, pontos, empl
     [key]: { employees, pontos, semanas, forno, carregamentos },
   };
 
-  await supabase.from('app_data').upsert(
+  const { error } = await supabase.from('app_data').upsert(
     { user_id: targetId, fornos: updatedFornos, settings, updated_at: new Date().toISOString() },
     { onConflict: 'user_id' }
   );
+
+  if (error) {
+    if (import.meta.env.DEV) console.warn('[sync] push failed:', error.message);
+    return false;
+  }
+  return true;
 }
 
 // Extrai slice de dados de um forno específico, com compat para formato antigo (colunas flat)
