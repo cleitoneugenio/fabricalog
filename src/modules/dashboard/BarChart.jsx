@@ -50,7 +50,7 @@ export default function BarChart({ data }) {
             <g key={i}>
               <line
                 x1={0} y1={y} x2={chartW} y2={y}
-                stroke="oklch(23% 0.015 38)"
+                stroke="var(--border)"
                 strokeWidth={1}
                 strokeDasharray={i === yTicks ? '0' : '3 3'}
               />
@@ -119,7 +119,7 @@ export default function BarChart({ data }) {
                   x={gx + barW / 2}
                   y={chartH - hE - hC - hV - 4}
                   textAnchor="middle"
-                  fontSize={9}
+                  fontSize={11}
                   fill="oklch(75% 0.01 38)"
                   fontFamily="Syne, system-ui, sans-serif"
                   fontWeight={600}

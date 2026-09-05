@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Ic from '../../components/Ic';
 import Btn from '../../components/Btn';
+import Modal from '../../components/Modal';
 import WeekNavigator from '../../components/WeekNavigator';
 import BarChart from './BarChart';
 import OccurrenceList from './OccurrenceList';
@@ -9,6 +10,7 @@ import { weekLabel, DAY_NAMES, isWeekPast } from '../../utils/weekLabel';
 import { countFornos } from '../../utils/calcSemana';
 import DashboardPlano from './DashboardPlano';
 import FornosChart from './FornosChart';
+import LuvasChart from './LuvasChart';
 import styles from './Dashboard.module.css';
 
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -43,13 +45,63 @@ export default function Dashboard({ semanas, onUpdateSemana }) {
   const [view, setView] = useState('semana');
   const [idx, setIdx] = useState(0);
   const [monthIdx, setMonthIdx] = useState(0);
+  const [exportPicker, setExportPicker] = useState(null); // { type: 'semana'|'mes', ... }
+
+  async function handleExport(theme) {
+    const target = exportPicker;
+    setExportPicker(null);
+    if (!target) return;
+    try {
+      if (target.type === 'semana') {
+        await exportDashboard(target.semana, target.prevSemana, theme);
+      } else {
+        await exportDashboardMes(target.month, theme);
+      }
+    } catch (e) {
+      alert(`Erro ao exportar: ${e.message}`);
+    }
+  }
+
+  const exportThemeModal = exportPicker ? (
+    <Modal open onClose={() => setExportPicker(null)} title="Exportar PDF">
+      <p style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 14 }}>
+        Escolha o tema do relatório.
+      </p>
+      <div className={styles.exportThemeGrid}>
+        <button className={styles.exportThemeBtn} onClick={() => handleExport('dark')}>
+          <div className={styles.exportThemePreview} style={{ background: '#180f0b', borderColor: '#2b1e17' }}>
+            <div style={{ height: 3, background: '#eb5927', borderRadius: '4px 4px 0 0' }} />
+            <div style={{ padding: '6px 8px', display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {[40, 28, 28].map((w, i) => (
+                <div key={i} style={{ height: 3, width: `${w}%`, background: '#f0ebe7', borderRadius: 2, opacity: 0.3 }} />
+              ))}
+            </div>
+          </div>
+          <span className={styles.exportThemeName}>Escuro</span>
+          <span className={styles.exportThemeDesc}>Para compartilhar</span>
+        </button>
+        <button className={styles.exportThemeBtn} onClick={() => handleExport('light')}>
+          <div className={styles.exportThemePreview} style={{ background: '#f5f0ea', borderColor: '#d8d0c8' }}>
+            <div style={{ height: 3, background: '#eb5927', borderRadius: '4px 4px 0 0' }} />
+            <div style={{ padding: '6px 8px', display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {[40, 28, 28].map((w, i) => (
+                <div key={i} style={{ height: 3, width: `${w}%`, background: '#1c1410', borderRadius: 2, opacity: 0.25 }} />
+              ))}
+            </div>
+          </div>
+          <span className={styles.exportThemeName}>Claro</span>
+          <span className={styles.exportThemeDesc}>Para imprimir</span>
+        </button>
+      </div>
+    </Modal>
+  ) : null;
 
   const months = groupByMonth(sorted);
 
   if (!sorted.length) {
     return (
       <div className={styles.empty}>
-        <Ic name="factory" size={44} style={{ color: 'var(--text-dim)', opacity: 0.35 }} />
+        <Ic name="factory" size={44} className={styles.emptyIcon} />
         <div>
           <p className={styles.emptyTitle}>Nenhuma semana registrada</p>
           <p className={styles.emptySub}>Vá para a aba Produção para começar a registrar.</p>
@@ -82,6 +134,13 @@ export default function Dashboard({ semanas, onUpdateSemana }) {
         plano: plano ? (Number(plano[i]) || 0) : null,
       };
     });
+    const totalLuvas = dias.reduce((acc, d) => acc + (Number(d.luvas) || 0), 0);
+    const custoLuvas = totalLuvas * 4.50;
+    const luvasChartData = dias.map((d, i) => ({
+      label: DAY_NAMES[i],
+      pares: Number(d.luvas) || 0,
+    }));
+
     const metaOk = totalFornos >= semana.meta;
     const past   = isWeekPast(semana);
 
@@ -119,7 +178,7 @@ export default function Dashboard({ semanas, onUpdateSemana }) {
               disablePrev={idx >= sorted.length - 1}
               disableNext={idx <= 0}
             />
-            <Btn variant="ghost" size="sm" onClick={() => exportDashboard(semana, prevSemana).catch(e => alert(`Erro ao exportar: ${e.message}`))}>
+            <Btn variant="ghost" size="sm" onClick={() => setExportPicker({ type: 'semana', semana, prevSemana })}>
               <Ic name="download" size={14} /> <span className={styles.btnLabel}>Exportar</span>
             </Btn>
           </div>
@@ -177,6 +236,24 @@ export default function Dashboard({ semanas, onUpdateSemana }) {
           </div>
         </section>
 
+        {totalLuvas > 0 && (
+          <div className={styles.luvasCard}>
+            <div className={styles.luvasHeader}>
+              <span className={styles.luvasLabel}>Luvas</span>
+              <div className={styles.luvasMeta}>
+                <span className={styles.luvasTotal}>{totalLuvas} pares</span>
+                <span className={styles.luvasDivider}>·</span>
+                <span className={styles.luvasCusto}>
+                  {custoLuvas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </span>
+              </div>
+            </div>
+            <div className={styles.luvasChartWrap}>
+              <LuvasChart data={luvasChartData} />
+            </div>
+          </div>
+        )}
+
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Ocorrências da Semana</h2>
           <OccurrenceList dias={dias} />
@@ -221,6 +298,8 @@ export default function Dashboard({ semanas, onUpdateSemana }) {
             ))}
           </div>
         </section>
+
+        {exportThemeModal}
       </div>
     );
   }
@@ -291,7 +370,7 @@ export default function Dashboard({ semanas, onUpdateSemana }) {
             disablePrev={safeMonthIdx >= months.length - 1}
             disableNext={safeMonthIdx <= 0}
           />
-          <Btn variant="ghost" size="sm" onClick={() => exportDashboardMes(month).catch(e => alert(`Erro ao exportar: ${e.message}`))}>
+          <Btn variant="ghost" size="sm" onClick={() => setExportPicker({ type: 'mes', month })}>
             <Ic name="download" size={14} /> <span className={styles.btnLabel}>Exportar</span>
           </Btn>
         </div>
@@ -347,6 +426,8 @@ export default function Dashboard({ semanas, onUpdateSemana }) {
           </section>
         </>
       )}
+
+      {exportThemeModal}
     </div>
   );
 }

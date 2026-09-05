@@ -4,11 +4,11 @@ const H = 200;
 const PADDING = { top: 28, right: 20, bottom: 36, left: 36 };
 const BAR_GAP = 18;
 
-export default function FornosChart({ data }) {
+export default function LuvasChart({ data }) {
   const chartW = W - PADDING.left - PADDING.right;
   const chartH = H - PADDING.top - PADDING.bottom;
 
-  const maxVal = Math.max(1, ...data.map(d => Math.max(d.real, d.plano || 0)));
+  const maxVal = Math.max(1, ...data.map(d => d.pares));
   const barW = chartW / data.length - BAR_GAP;
   const scaleH = (v) => Math.max(0, (v / maxVal) * chartH);
 
@@ -23,13 +23,9 @@ export default function FornosChart({ data }) {
       style={{ display: 'block', overflow: 'visible' }}
     >
       <defs>
-        <linearGradient id="gradFornos" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="oklch(65% 0.19 38)" />
-          <stop offset="100%" stopColor="oklch(52% 0.2 38)" />
-        </linearGradient>
-        <linearGradient id="gradFornosMiss" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="oklch(76% 0.17 68)" />
-          <stop offset="100%" stopColor="oklch(62% 0.17 68)" />
+        <linearGradient id="gradLuvas" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="oklch(68% 0.14 200)" />
+          <stop offset="100%" stopColor="oklch(55% 0.14 200)" />
         </linearGradient>
       </defs>
 
@@ -60,54 +56,37 @@ export default function FornosChart({ data }) {
         })}
 
         {data.map((d, i) => {
-          const hR = scaleH(d.real);
+          const h = scaleH(d.pares);
           const gx = i * (barW + BAR_GAP) + BAR_GAP / 2;
-          const metOk = d.plano == null || d.real >= d.plano;
-          const hasData = d.real > 0;
+          const hasData = d.pares > 0;
 
           return (
             <g key={i}>
-              {/* Bar */}
               {hasData && (
                 <rect
-                  x={gx} y={chartH - hR}
-                  width={barW} height={hR}
-                  fill={metOk ? 'url(#gradFornos)' : 'url(#gradFornosMiss)'}
+                  x={gx} y={chartH - h}
+                  width={barW} height={h}
+                  fill="url(#gradLuvas)"
                   rx={3}
                 >
-                  <title>{d.label}: {d.real} forno{d.real !== 1 ? 's' : ''}</title>
+                  <title>{d.label}: {d.pares} par{d.pares !== 1 ? 'es' : ''}</title>
                 </rect>
               )}
 
-              {/* Planned target line */}
-              {d.plano != null && d.plano > 0 && (
-                <line
-                  x1={gx - 3} y1={chartH - scaleH(d.plano)}
-                  x2={gx + barW + 3} y2={chartH - scaleH(d.plano)}
-                  stroke="oklch(65% 0.012 38)"
-                  strokeWidth={1.5}
-                  strokeDasharray="3 2"
-                >
-                  <title>Plano {d.label}: {d.plano} fornos</title>
-                </line>
-              )}
-
-              {/* Value label on top */}
               {hasData && (
                 <text
                   x={gx + barW / 2}
-                  y={chartH - hR - 5}
+                  y={chartH - h - 5}
                   textAnchor="middle"
                   fontSize={11}
                   fill="oklch(75% 0.01 38)"
                   fontFamily="Syne, system-ui, sans-serif"
                   fontWeight={700}
                 >
-                  {d.real}
+                  {d.pares}
                 </text>
               )}
 
-              {/* Day label */}
               <text
                 x={gx + barW / 2}
                 y={chartH + 18}
@@ -125,11 +104,9 @@ export default function FornosChart({ data }) {
       </g>
 
       {/* Legend */}
-      <g transform={`translate(${W - PADDING.right - 170}, ${PADDING.top - 14})`}>
-        <rect x={0} y={0} width={10} height={10} fill="url(#gradFornos)" rx={2} />
-        <text x={14} y={9} fontSize={10} fill="oklch(57% 0.013 38)" fontFamily="Syne, system-ui">Fornos</text>
-        <line x1={62} y1={5} x2={74} y2={5} stroke="oklch(65% 0.012 38)" strokeWidth={1.5} strokeDasharray="3 2" />
-        <text x={78} y={9} fontSize={10} fill="oklch(57% 0.013 38)" fontFamily="Syne, system-ui">Meta do dia</text>
+      <g transform={`translate(${W - PADDING.right - 130}, ${PADDING.top - 14})`}>
+        <rect x={0} y={0} width={10} height={10} fill="url(#gradLuvas)" rx={2} />
+        <text x={14} y={9} fontSize={10} fill="oklch(57% 0.013 38)" fontFamily="Syne, system-ui">Pares de luvas</text>
       </g>
     </svg>
   );

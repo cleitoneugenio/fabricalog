@@ -78,7 +78,7 @@
 .heroCard {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-lg);
   padding: 24px 24px 20px;
   display: flex;
   flex-direction: column;
@@ -142,7 +142,7 @@
 .fornosCard {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-lg);
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
@@ -249,14 +249,14 @@
 .chartWrap {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-lg);
   padding: 20px 16px 8px;
 }
 
 .resumoCard {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-lg);
   overflow: hidden;
 }
 
@@ -294,7 +294,7 @@
 .variavelCard {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-lg);
   overflow: hidden;
 }
 
@@ -372,4 +372,108 @@
 .emptySub {
   font-size: 13px;
   color: var(--text-dim);
+}
+
+.emptyIcon {
+  color: oklch(65% 0.19 38 / 0.25);
+}
+
+/* ── Luvas card ─────────────────────────────────────────────── */
+.luvasCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.luvasHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.luvasLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.luvasMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.luvasTotal {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: oklch(68% 0.14 200);
+}
+
+.luvasDivider {
+  font-size: 14px;
+  color: var(--text-subtle);
+}
+
+.luvasCusto {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: -0.01em;
+}
+
+.luvasChartWrap {
+  padding: 16px 8px 4px;
+}
+
+/* ── Export theme picker ─────────────────────────────────────────────────── */
+.exportThemeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.exportThemeBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: oklch(15% 0.016 38);
+  color: var(--text);
+  font-family: var(--font);
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.exportThemeBtn:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.exportThemePreview {
+  width: 100%;
+  height: 56px;
+  border-radius: 6px;
+  border: 1px solid;
+  overflow: hidden;
+}
+
+.exportThemeName {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.exportThemeDesc {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 500;
 }

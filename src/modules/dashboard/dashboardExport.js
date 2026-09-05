@@ -2,8 +2,8 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { countFornos } from '../../utils/calcSemana';
 
-// Palette — hex equivalents of the app's oklch design system (html2canvas strips oklch)
-const C = {
+// ── Palettes — hex equivalents of the app's oklch design system (html2canvas strips oklch) ──
+const DARK = {
   bgDeep:     '#100b07',   // oklch(10% 0.014 38)  — topbar / footer
   bgMain:     '#180f0b',   // oklch(12% 0.016 38)  — page bg
   bgCard:     '#1e1410',   // oklch(17% 0.018 38)  — card bg
@@ -20,6 +20,27 @@ const C = {
   warningDim: 'rgba(212,150,14,0.15)',
   danger:     '#d84040',   // oklch(63% 0.21 22)
 };
+
+const LIGHT = {
+  bgDeep:     '#e8e2dc',   // warm taupe — topbar / footer
+  bgMain:     '#f5f0ea',   // warm off-white — page bg
+  bgCard:     '#ffffff',   // pure white cards
+  bgChip:     '#ede8e2',   // soft warm chip
+  border:     '#d8d0c8',   // warm light border
+  borderLt:   '#c8c0b8',   // slightly darker border
+  accent:     '#eb5927',   // same brand orange
+  accentDim:  'rgba(235,89,39,0.08)',
+  text:       '#1c1410',   // warm near-black
+  textDim:    '#6b5e55',   // warm medium (AA on white)
+  success:    '#1a6e38',   // dark green (AA on white)
+  successDim: 'rgba(26,110,56,0.08)',
+  warning:    '#8a5e00',   // dark amber (AA on white)
+  warningDim: 'rgba(138,94,0,0.08)',
+  danger:     '#b52828',   // dark red (AA on white)
+};
+
+// Active palette — set before each render call
+let C = DARK;
 
 const DAY_LABELS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
@@ -84,7 +105,8 @@ function barChart(values, labels, color, title) {
     </div>`;
 }
 
-function buildHTML(semana, prevSemana) {
+function buildHTML(semana, prevSemana, palette = DARK) {
+  C = palette;
   const dias = semana.dias || [];
 
   const totalVendas  = dias.reduce((s, d) => s + (Number(d.vendas)  || 0), 0);
@@ -116,6 +138,9 @@ function buildHTML(semana, prevSemana) {
   const estoqueDia = dias.map(d => Number(d.estoque) || 0);
   const funcDia    = dias.map(d => Number(d.qtdFunc) || 0);
   const fornosDia  = dias.map(d => countFornos([d]));
+  const luvasDia   = dias.map(d => Number(d.luvas)   || 0);
+  const totalLuvas = luvasDia.reduce((s, v) => s + v, 0);
+  const custoLuvas = totalLuvas * 4.50;
 
   const start    = new Date(semana.dataInicio + 'T12:00:00');
   const end      = new Date(start); end.setDate(end.getDate() + 5);
@@ -263,6 +288,32 @@ function buildHTML(semana, prevSemana) {
           ${barChart(fornosDia, DAY_LABELS, C.accent,  'Fornos Enfornados por Dia')}
         </div>
 
+        ${totalLuvas > 0 ? `
+        <!-- LUVAS -->
+        <div style="background:${C.bgCard};border:1px solid ${C.border};border-radius:10px;overflow:hidden">
+          <div style="padding:9px 16px 9px;border-bottom:1px solid ${C.border};display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:9px;font-weight:700;color:${C.textDim};text-transform:uppercase;letter-spacing:.08em">Luvas</span>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="font-size:16px;font-weight:800;color:#3aa8cc;letter-spacing:-.02em">${totalLuvas} pares</span>
+              <span style="font-size:12px;font-weight:700;color:${C.textDim}">${fmtBRL(custoLuvas)}</span>
+            </div>
+          </div>
+          <div style="padding:14px 12px 10px;display:flex;gap:6px;align-items:flex-end">
+            ${luvasDia.map((v, i) => {
+              const maxL = Math.max(...luvasDia, 1);
+              const h = maxL > 0 ? Math.max(Math.round((v / maxL) * 75), v > 0 ? 3 : 0) : 0;
+              return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:3px">
+                <span style="font-size:9px;font-weight:800;color:${C.text};min-height:12px;letter-spacing:-.01em">${v > 0 ? v : ''}</span>
+                <div style="width:100%;display:flex;align-items:flex-end;height:75px">
+                  <div style="width:100%;height:${h}px;background:#3aa8cc;border-radius:3px 3px 0 0"></div>
+                </div>
+                <span style="font-size:9px;color:${C.textDim};font-weight:600">${DAY_LABELS[i]}</span>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+        ` : ''}
+
         <!-- BOTTOM ROW — Ocorrências + Resumo -->
         <div style="display:flex;gap:10px;align-items:flex-start">
 
@@ -295,7 +346,7 @@ function buildHTML(semana, prevSemana) {
 }
 
 // ── Helper: HTML → PDF ────────────────────────────────────────────────────────
-async function htmlToPDF(html, filename) {
+async function htmlToPDF(html, filename, bgColor = DARK.bgMain) {
   const container = document.createElement('div');
   container.id = 'fabricalog-export-root';
   container.style.cssText = 'position:fixed;left:-9999px;top:0;z-index:-1';
@@ -306,7 +357,7 @@ async function htmlToPDF(html, filename) {
     const canvas = await html2canvas(container.firstElementChild, {
       scale: 2,
       useCORS: true,
-      backgroundColor: C.bgMain,
+      backgroundColor: bgColor,
       logging: false,
       onclone: (clonedDoc) => {
         Array.from(clonedDoc.styleSheets).forEach(sheet => {
@@ -332,12 +383,18 @@ async function htmlToPDF(html, filename) {
   }
 }
 
-export async function exportDashboard(semana, prevSemana = null) {
-  await htmlToPDF(buildHTML(semana, prevSemana), `dashboard_s${semana.numero}_${semana.dataInicio}.pdf`);
+export async function exportDashboard(semana, prevSemana = null, theme = 'dark') {
+  const palette = theme === 'light' ? LIGHT : DARK;
+  await htmlToPDF(
+    buildHTML(semana, prevSemana, palette),
+    `dashboard_s${semana.numero}_${semana.dataInicio}.pdf`,
+    palette.bgMain,
+  );
 }
 
 // ── Relatório Mensal ──────────────────────────────────────────────────────────
-function buildMonthHTML(month, semanas) {
+function buildMonthHTML(month, semanas, palette = DARK) {
+  C = palette;
   const mSemanas = [...semanas].sort((a, b) => new Date(a.dataInicio) - new Date(b.dataInicio));
 
   const mVendas  = mSemanas.reduce((s, sem) => s + (sem.dias || []).reduce((a, d) => a + (Number(d.vendas)  || 0), 0), 0);
@@ -522,7 +579,8 @@ function buildMonthHTML(month, semanas) {
     </div>`;
 }
 
-export async function exportDashboardMes(month) {
+export async function exportDashboardMes(month, theme = 'dark') {
+  const palette  = theme === 'light' ? LIGHT : DARK;
   const filename = `dashboard_${month.label.replace(/\s/g, '_').toLowerCase()}.pdf`;
-  await htmlToPDF(buildMonthHTML(month, month.semanas), filename);
+  await htmlToPDF(buildMonthHTML(month, month.semanas, palette), filename, palette.bgMain);
 }

@@ -8,7 +8,7 @@
 .progressCard {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-lg);
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
@@ -86,7 +86,7 @@
 .todayCard {
   background: var(--accent-dim);
   border: 1px solid var(--accent);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-lg);
   padding: 18px 22px;
   display: flex;
   align-items: center;
@@ -151,7 +151,7 @@
 .dayCard {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
