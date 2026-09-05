@@ -16,7 +16,17 @@ Problema real com restrição real gera solução real.
 
 ## Demo
 
+**Aplicação ao vivo:** [fabricalog.vercel.app](https://fabricalog.vercel.app)
+
 [![FabricaLog — Demo](https://img.youtube.com/vi/jmZqM_GJcZc/maxresdefault.jpg)](https://www.youtube.com/watch?v=jmZqM_GJcZc)
+
+---
+
+## Impacto
+
+- Produção que passou de 34 para 51 milheiros/semana por equipe, com 6 pessoas em vez de 9 — dobrando o total do processo de 102 para 204 milheiros/semana
+- Substituição de duas planilhas Excel (produção + ponto) por um único fluxo digital, com registro em tempo real no chão de fábrica, mesmo sem internet estável
+- Em produção desde maio de 2026
 
 ---
 
@@ -68,6 +78,7 @@ Problema real com restrição real gera solução real.
 | Banco local | localStorage com debounce |
 | Banco nuvem | Supabase (PostgreSQL + Auth) |
 | Exportação | SheetJS (xlsx), HTML, jsPDF |
+| Testes | Vitest (lógica de ponto, bônus, sincronização e backup) |
 
 ---
 
@@ -110,11 +121,10 @@ npm install
 
 ### Variáveis de ambiente
 
-Crie um arquivo `.env` na raiz:
+Copie `.env.example` para `.env` e preencha com as credenciais do seu projeto Supabase:
 
-```env
-VITE_SUPABASE_URL=https://xxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=xxxx
+```bash
+cp .env.example .env
 ```
 
 ### Rodando em desenvolvimento
@@ -128,6 +138,14 @@ Para testar no celular pela rede local (HTTPS):
 ```bash
 npm run dev:mobile
 ```
+
+### Testes
+
+```bash
+npm test
+```
+
+Cobrem a lógica pura em `src/utils/` — cálculo de ponto e bônus (`calcPonto`), merge de sincronização por `updatedAt` (`syncMerge`) e integridade de backup (`backup`).
 
 ---
 
@@ -182,6 +200,25 @@ CREATE POLICY "users_own_data" ON app_data
   FOR ALL USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 ```
+
+---
+
+## Sobre este projeto
+
+Este é um dos produtos que documento publicamente na minha transição
+de carreira de operações para dados e tecnologia.
+
+- Portfólio: [cleiton-dados.vercel.app](https://cleiton-dados.vercel.app)
+<!-- TODO: adicionar links reais
+- Artigos no Medium: https://medium.com/@<perfil>
+- LinkedIn: https://www.linkedin.com/in/<perfil>
+-->
+
+---
+
+## Licença
+
+Ver [LICENSE.md](./LICENSE.md).
 
 ---
 
