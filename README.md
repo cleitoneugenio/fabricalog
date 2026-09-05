@@ -209,9 +209,9 @@ Este é um dos produtos que documento publicamente na minha transição
 de carreira de operações para dados e tecnologia.
 
 - Portfólio: [cleiton-dados.vercel.app](https://cleiton-dados.vercel.app)
-<!-- TODO: adicionar links reais
+- LinkedIn: [cleiton-eugenio-dados](https://www.linkedin.com/in/cleiton-eugenio-dados/)
+<!-- TODO: adicionar link do Medium
 - Artigos no Medium: https://medium.com/@<perfil>
-- LinkedIn: https://www.linkedin.com/in/<perfil>
 -->
 
 ---
