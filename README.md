@@ -18,7 +18,11 @@ Problema real com restrição real gera solução real.
 
 **Aplicação ao vivo:** [fabricalog.vercel.app](https://fabricalog.vercel.app)
 
-[![FabricaLog — Demo](https://img.youtube.com/vi/jmZqM_GJcZc/maxresdefault.jpg)](https://www.youtube.com/watch?v=jmZqM_GJcZc)
+<p align="center">
+  <img src="docs/screenshots/fabricalog-demo.gif" width="320" alt="FabricaLog — demo animada percorrendo dashboard, produção, cargas, ponto, recibos, câmara e planta do forno" />
+</p>
+
+Walkthrough completo em vídeo no [YouTube](https://www.youtube.com/watch?v=jmZqM_GJcZc).
 
 ---
 
