@@ -6,6 +6,7 @@ import InputRow from '../../components/InputRow';
 import { weekLabel } from '../../utils/weekLabel';
 import { calcPonto } from '../../utils/calcPonto';
 import { formatBRL } from '../../utils/formatBRL';
+import { SkeletonCard } from '../../components/Skeleton';
 import styles from './PontoList.module.css';
 
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -44,7 +45,7 @@ function PontoCard({ ponto, employees, onSelect }) {
   );
 }
 
-export default function PontoList({ pontos, employees, onCreate, onSelect, isViewer }) {
+export default function PontoList({ pontos, employees, onCreate, onSelect, isViewer, loading }) {
   const [open, setOpen] = useState(false);
   const [numero, setNumero] = useState('');
   const [dataInicio, setDataInicio] = useState(() => new Date().toISOString().split('T')[0]);
@@ -87,9 +88,13 @@ export default function PontoList({ pontos, employees, onCreate, onSelect, isVie
         )}
       </div>
 
-      {sorted.length === 0 ? (
+      {loading ? (
+        <div className={styles.list}>
+          <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
+        </div>
+      ) : sorted.length === 0 ? (
         <div className={styles.empty}>
-          <Ic name="users" size={40} style={{ opacity: 0.35 }} />
+          <Ic name="users" size={40} className={styles.emptyIcon} />
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Nenhum registro de ponto</p>
             <p style={{ fontSize: 12 }}>Registre a primeira semana de ponto dos funcionários.</p>

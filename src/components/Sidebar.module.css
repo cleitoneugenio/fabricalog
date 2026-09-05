@@ -44,7 +44,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
   color: var(--text-dim);
   font-size: 13px;
   font-weight: 600;
@@ -70,6 +70,24 @@
   color: var(--accent);
 }
 
+/* ── Sync dot ─────────────────────────────── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.8); }
+}
+
+.syncDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+
+.syncDotActive {
+  animation: pulse 1s ease-in-out infinite;
+}
+
 .footer {
   margin-top: auto;
   padding-top: 12px;
@@ -84,7 +102,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
   color: var(--text-dim);
   font-size: 12px;
   font-weight: 600;

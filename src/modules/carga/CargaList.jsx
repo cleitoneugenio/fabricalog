@@ -3,6 +3,7 @@ import Btn from '../../components/Btn';
 import Ic from '../../components/Ic';
 import Modal from '../../components/Modal';
 import InputRow from '../../components/InputRow';
+import { SkeletonCard } from '../../components/Skeleton';
 import styles from './CargaList.module.css';
 
 const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -158,7 +159,7 @@ function CarregamentoCard({ item, onEdit }) {
   );
 }
 
-export default function CargaList({ store, isViewer }) {
+export default function CargaList({ store, isViewer, loading }) {
   const [selectedDate, setSelectedDate] = useState(toISO(new Date()));
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -303,9 +304,13 @@ export default function CargaList({ store, isViewer }) {
       )}
 
       {/* Lista */}
-      {lista.length === 0 ? (
+      {loading ? (
+        <div className={styles.list}>
+          <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
+        </div>
+      ) : lista.length === 0 ? (
         <div className={styles.empty}>
-          <Ic name="truck" size={40} style={{ opacity: 0.25 }} />
+          <Ic name="truck" size={40} className={styles.emptyIcon} />
           <p className={styles.emptyTitle}>Nenhum carregamento {isToday ? 'hoje' : 'neste dia'}</p>
           <p className={styles.emptySub}>Toque em + para registrar.</p>
         </div>

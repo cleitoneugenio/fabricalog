@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Ic from './Ic';
 import styles from './MobileMenu.module.css';
 
-export default function MobileMenu({ onExportBackup, onImportBackup, onOpenSettings, onLogout, syncing, hidden, isViewer, isEditor }) {
+export default function MobileMenu({ onExportBackup, onImportBackup, onOpenSettings, onLogout, hidden, isViewer, isEditor }) {
   const [open, setOpen] = useState(false);
 
   function handle(fn) {
@@ -34,7 +34,6 @@ export default function MobileMenu({ onExportBackup, onImportBackup, onOpenSetti
               </span>
             )}
           </div>
-          {syncing && <span style={{ fontSize: 10, color: 'var(--warning)', fontWeight: 700 }}>↑</span>}
         </div>
         <button className={styles.menuBtn} onClick={() => setOpen(true)}>
           <Ic name="more" size={20} />

@@ -65,8 +65,11 @@ export default function Sidebar({ active, onChange, onExportBackup, onImportBack
       <div className={styles.footer}>
         {userEmail && (
           <div style={{ padding: '6px 12px 8px', fontSize: 10, color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: syncing ? 'var(--warning)' : 'var(--success)', flexShrink: 0 }} />
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{syncing ? 'Sincronizando...' : userEmail}</span>
+            <span
+              className={`${styles.syncDot} ${syncing ? styles.syncDotActive : ''}`}
+              style={{ background: syncing ? 'var(--warning)' : 'var(--success)' }}
+            />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userEmail}</span>
           </div>
         )}
         <button className={styles.footerBtn} onClick={onExportBackup}>

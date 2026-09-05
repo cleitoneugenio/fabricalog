@@ -2,8 +2,12 @@ import { supabase } from './supabase';
 
 // adminUserId: para editors, é o user_id do admin dono dos dados
 // fornoKey:    qual fatia de dados gravar (ex: 'cedan', 'continuo')
-export async function pushToCloud({ adminUserId, fornoKey, semanas, pontos, employees, settings, forno, carregamentos }) {
-  const { data: { user } } = await supabase.auth.getUser();
+export async function pushToCloud({ adminUserId, fornoKey, semanas, pontos, employees, settings, forno, carregamentos, user: passedUser = null }) {
+  let user = passedUser;
+  if (!user) {
+    const { data: { session } } = await supabase.auth.getSession();
+    user = session?.user ?? null;
+  }
   if (!user) return;
 
   const targetId = adminUserId ?? user.id;
@@ -66,8 +70,12 @@ async function _fetchAppData(userId) {
 
 // activeFornoKey — forno selecionado (null = auto)
 // activeOwnerId  — owner já selecionado (usado quando há múltiplos admins, raro)
-export async function pullFromCloud(activeFornoKey = null, activeOwnerId = null) {
-  const { data: { user } } = await supabase.auth.getUser();
+export async function pullFromCloud(activeFornoKey = null, activeOwnerId = null, passedUser = null) {
+  let user = passedUser;
+  if (!user) {
+    const { data: { session } } = await supabase.auth.getSession();
+    user = session?.user ?? null;
+  }
   if (!user) return null;
 
   const { data: invites } = await supabase

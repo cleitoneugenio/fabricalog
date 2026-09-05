@@ -21,7 +21,7 @@
   justify-content: center;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   color: var(--text-dim);
   flex-shrink: 0;
   transition: color 0.15s, border-color 0.15s;
@@ -62,7 +62,7 @@
 .summary {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -124,7 +124,7 @@
   text-align: left;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -239,6 +239,10 @@
   color: var(--text-dim);
 }
 
+.emptyIcon {
+  color: oklch(65% 0.19 38 / 0.25);
+}
+
 /* ── FAB ── */
 .fab {
   position: fixed;
@@ -300,7 +304,7 @@
 .tipoBtns {
   display: flex;
   gap: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   overflow: hidden;
   border: 1px solid var(--border);
 }
@@ -353,7 +357,7 @@
   background: oklch(15% 0.016 38);
   color: var(--text-dim);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
   text-align: center;
@@ -400,7 +404,7 @@
   justify-content: space-between;
   background: oklch(68% 0.16 148 / 0.1);
   border: 1px solid oklch(68% 0.16 148 / 0.25);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   padding: 8px 14px;
 }
 

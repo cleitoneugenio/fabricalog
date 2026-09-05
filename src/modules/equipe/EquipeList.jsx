@@ -3,9 +3,10 @@ import Ic from '../../components/Ic';
 import Btn from '../../components/Btn';
 import Modal from '../../components/Modal';
 import InputRow from '../../components/InputRow';
+import { SkeletonCard } from '../../components/Skeleton';
 import styles from './EquipeList.module.css';
 
-export default function EquipeList({ employees, onAdd, onRename, onRemove, onReactivate, isViewer }) {
+export default function EquipeList({ employees, onAdd, onRename, onRemove, onReactivate, isViewer, loading }) {
   const [addOpen, setAddOpen] = useState(false);
   const [name, setName] = useState('');
   const [confirmId, setConfirmId] = useState(null);
@@ -55,9 +56,13 @@ export default function EquipeList({ employees, onAdd, onRename, onRemove, onRea
         )}
       </div>
 
-      {employees.length === 0 ? (
+      {loading ? (
+        <div className={styles.list}>
+          <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
+        </div>
+      ) : employees.length === 0 ? (
         <div className={styles.empty}>
-          <Ic name="users" size={40} style={{ opacity: 0.35 }} />
+          <Ic name="users" size={40} className={styles.emptyIcon} />
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Nenhum funcionário</p>
             <p style={{ fontSize: 12 }}>Adicione o primeiro funcionário da equipe.</p>

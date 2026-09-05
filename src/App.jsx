@@ -43,6 +43,7 @@ export default function App() {
   const [dataOwnerId, setDataOwnerId]     = useState(null);  // user_id do dono dos dados (admin/editor→admin)
   const [showFornoPicker, setShowFornoPicker] = useState(false);
   const [syncing, setSyncing]           = useState(false);
+  const [dataLoading, setDataLoading]   = useState(false);
   const importRef = useRef();
   const syncTimer = useRef(null);
   const scheduleSyncRef = useRef(null);
@@ -96,7 +97,17 @@ export default function App() {
   // ── Pull: merge dados da nuvem com dados locais (last-write-wins por item) ─
   // replace=true: usado na troca de forno — sempre sobrescreve os stores locais
   async function syncDown(ownerId = null, fornoKey = null, replace = false) {
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    // Só mostra skeleton se não há dados locais — primeiro login real sem localStorage
+    const hasLocalData =
+      semanaStore.items.length > 0 ||
+      pontoStore.items.length > 0 ||
+      employeeStore.employees.length > 0;
+    const shouldShowLoading = !replace && !hasLocalData;
+    if (shouldShowLoading) setDataLoading(true);
+    try {
+    // getSession() → cache local, sem round trip de rede ao servidor de auth
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUser = session?.user;
     if (!currentUser) return;
 
     const prevId = localStorage.getItem('fabricalog_session_user');
@@ -107,7 +118,8 @@ export default function App() {
 
     const resolvedOwnerId = ownerId ?? activeOwnerId ?? null;
     const resolvedForno   = fornoKey ?? activeForno ?? null;
-    const data = await pullFromCloud(resolvedForno, resolvedOwnerId);
+    // Passa currentUser — elimina getUser() duplicado dentro de pullFromCloud
+    const data = await pullFromCloud(resolvedForno, resolvedOwnerId, currentUser);
     if (!data) { sessionReady.current = true; return; }
 
     setIsViewer(data.isViewer ?? false);
@@ -154,6 +166,9 @@ export default function App() {
       scheduleAutoBackup();
       // Garante push de qualquer dado local que não chegou à nuvem (ex: editado offline)
       scheduleSyncRef.current?.();
+    }
+    } finally {
+      if (shouldShowLoading) setDataLoading(false);
     }
   }
 
@@ -233,7 +248,6 @@ export default function App() {
   // ── Pull automático: tab visível + reconexão + intervalo de 60s ──────────
   const syncDownRef = useRef(syncDown);
   useEffect(() => { syncDownRef.current = syncDown; });
-  useEffect(() => { scheduleSyncRef.current = scheduleSync; }, [scheduleSync]);
 
   useEffect(() => {
     if (!user) return;
@@ -273,6 +287,7 @@ export default function App() {
           settings:      isEditor ? undefined : settingsStore.settings,
           forno:         fornoStore.chambers,
           carregamentos: carregamentoStore.items,
+          user,          // evita getUser() interno — user já validado na sessão ativa
         });
         if (ok !== false) {
           localStorage.removeItem('fabricalog_push_pending');
@@ -286,6 +301,9 @@ export default function App() {
       }
     }, 3000);
   }, [user, isViewer, dataOwnerId, activeForno, semanaStore.items, pontoStore.items, employeeStore.employees, settingsStore.settings, fornoStore.chambers, carregamentoStore.items]);
+
+  // Mantém ref do scheduleSync atualizada (declarado aqui para evitar TDZ)
+  useEffect(() => { scheduleSyncRef.current = scheduleSync; }, [scheduleSync]);
 
   useEffect(() => {
     scheduleSync();
@@ -375,6 +393,7 @@ export default function App() {
         <SemanaList
           semanas={semanaStore.items}
           isViewer={isViewer}
+          loading={dataLoading}
           onCreate={isViewer ? undefined : (partial) => { const id = semanaStore.create(partial); setSemanaId(id); }}
           onSelect={setSemanaId}
         />
@@ -403,13 +422,14 @@ export default function App() {
           pontos={pontoStore.items}
           employees={employeeStore.employees}
           isViewer={isViewer}
+          loading={dataLoading}
           onCreate={isViewer ? undefined : (partial) => { const id = pontoStore.create(partial, employeeStore.activeEmployees); setPontoId(id); }}
           onSelect={setPontoId}
         />
       );
     }
 
-    if (module === 'carga') return <CargaList store={carregamentoStore} isViewer={isViewer} />;
+    if (module === 'carga') return <CargaList store={carregamentoStore} isViewer={isViewer} loading={dataLoading} />;
 
     if (module === 'camara') return <Camara />;
 
@@ -431,6 +451,7 @@ export default function App() {
         <EquipeList
           employees={employeeStore.employees}
           isViewer={isViewer}
+          loading={dataLoading}
           onAdd={isViewer ? undefined : employeeStore.add}
           onRename={isViewer ? undefined : employeeStore.rename}
           onRemove={isViewer ? undefined : employeeStore.remove}
@@ -444,6 +465,13 @@ export default function App() {
 
   return (
     <div className="app-layout">
+      {syncing && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, height: 2,
+          background: 'var(--warning)', transformOrigin: 'left center',
+          zIndex: 300, animation: 'syncProgress 2s ease-in-out forwards',
+        }} />
+      )}
       <Sidebar
         active={module}
         onChange={navigate}
@@ -464,7 +492,6 @@ export default function App() {
       <main className="main-content">
         <MobileMenu
           hidden={!!(activeSemanaId || activePontoId)}
-          syncing={syncing}
           isViewer={isViewer}
           isEditor={isEditor}
           onExportBackup={() => exportBackup(semanaStore.items, pontoStore.items, employeeStore.employees, settingsStore.settings, carregamentoStore.items)}

@@ -6,6 +6,7 @@ import Modal from '../../components/Modal';
 import InputRow from '../../components/InputRow';
 import { weekLabel } from '../../utils/weekLabel';
 import { countFornos } from '../../utils/calcSemana';
+import { SkeletonCard } from '../../components/Skeleton';
 import styles from './SemanaList.module.css';
 
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -44,7 +45,7 @@ function SemanaCard({ semana, onSelect }) {
   );
 }
 
-export default function SemanaList({ semanas, onCreate, onSelect, isViewer }) {
+export default function SemanaList({ semanas, onCreate, onSelect, isViewer, loading }) {
   const [open, setOpen] = useState(false);
   const [numero, setNumero] = useState('');
   const [dataInicio, setDataInicio] = useState(() => new Date().toISOString().split('T')[0]);
@@ -87,9 +88,13 @@ export default function SemanaList({ semanas, onCreate, onSelect, isViewer }) {
         )}
       </div>
 
-      {sorted.length === 0 ? (
+      {loading ? (
+        <div className={styles.list}>
+          <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
+        </div>
+      ) : sorted.length === 0 ? (
         <div className={styles.empty}>
-          <Ic name="production" size={40} style={{ opacity: 0.35 }} />
+          <Ic name="production" size={40} className={styles.emptyIcon} />
           <div style={{ textAlign: 'center' }}>
             <p style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Nenhuma semana cadastrada</p>
             <p style={{ fontSize: 12 }}>Registre a primeira semana de produção.</p>
