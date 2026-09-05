@@ -33,6 +33,8 @@ export default function DiaForm({ dia, onChange, readOnly }) {
     ? dia.enfornas.filter(v => v && typeof v === 'string' && v.startsWith('F'))
     : [];
 
+  const duplaMap = dia.enfornasDupla ?? {};
+
   function toggleQueima(f) {
     if (readOnly) return;
     onChange({ ...dia, queima: dia.queima === f ? '' : f });
@@ -42,11 +44,21 @@ export default function DiaForm({ dia, onChange, readOnly }) {
     if (readOnly) return;
     const current = enfornas;
     if (current.includes(f)) {
-      onChange({ ...dia, enfornas: current.filter(x => x !== f) });
+      const nextDupla = { ...duplaMap };
+      delete nextDupla[f];
+      onChange({ ...dia, enfornas: current.filter(x => x !== f), enfornasDupla: nextDupla });
     } else {
       onChange({ ...dia, enfornas: [...current, f] });
     }
   }
+
+  function setDupla(forno, name) {
+    onChange({ ...dia, enfornasDupla: { ...duplaMap, [forno]: name } });
+  }
+
+  const enformLabel = enfornas
+    .map(f => duplaMap[f] ? `${f} (${duplaMap[f]})` : f)
+    .join(', ');
 
   return (
     <div className={styles.grid} style={readOnly ? { pointerEvents: 'none', opacity: 0.75 } : undefined}>
@@ -60,15 +72,31 @@ export default function DiaForm({ dia, onChange, readOnly }) {
         <FornoChipGrid selected={dia.queima || ''} onToggle={toggleQueima} />
       </div>
 
-      {/* Enfornas — multi-seleção */}
+      {/* Enfornas — multi-seleção + dupla por forno */}
       <div className={styles.chipGroup}>
         <span className={styles.chipLabel}>
           Enfornas
           {enfornas.length > 0 && (
-            <span className={styles.chipSelected}>{enfornas.join(', ')}</span>
+            <span className={styles.chipSelected}>{enformLabel}</span>
           )}
         </span>
         <FornoChipGrid selected={enfornas} onToggle={toggleEnforna} multi />
+        {enfornas.length > 0 && (
+          <div className={styles.duplaList}>
+            {enfornas.map(f => (
+              <div key={f} className={styles.duplaRow}>
+                <span className={styles.duplaForno}>{f}</span>
+                <input
+                  className={styles.duplaInput}
+                  type="text"
+                  placeholder="Dupla"
+                  value={duplaMap[f] ?? ''}
+                  onChange={e => setDupla(f, e.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <InputRow label="Qualidade do Tijolo" type="select" value={dia.qualidade} onChange={set('qualidade')} disabled={readOnly}>
