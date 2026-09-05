@@ -4,6 +4,7 @@ import Btn from '../../components/Btn';
 import Modal from '../../components/Modal';
 import PontoCellEditor from './PontoCellEditor';
 import { exportPonto } from './pontoExport';
+import { gerarImagemDiaria } from './gerarImagemDiaria';
 import { gerarRecibos } from '../../utils/gerarRecibos';
 import { calcPonto } from '../../utils/calcPonto';
 import { weekLabel, DAY_NAMES } from '../../utils/weekLabel';
@@ -432,6 +433,7 @@ export default function PontoDetalhe({ ponto, employees, settings, isViewer, onB
   const [showDelete, setShowDelete]     = useState(false);
   const [showEdit, setShowEdit]         = useState(false);
   const [showRecibosPicker, setShowRecibosPicker] = useState(false);
+  const [showDiariaPicker, setShowDiariaPicker]   = useState(false);
   const [editNumero, setEditNumero]     = useState(String(ponto.numero));
   const [editData, setEditData]         = useState(ponto.dataInicio);
 
@@ -480,6 +482,9 @@ export default function PontoDetalhe({ ponto, employees, settings, isViewer, onB
         <div className={styles.actions}>
           <Btn variant="ghost" size="sm" onClick={() => exportPonto(ponto, displayEmployees).catch(err => alert(`Erro ao exportar: ${err.message}`))}>
             <Ic name="download" size={14} /> <span className={styles.btnLabel}>Exportar</span>
+          </Btn>
+          <Btn variant="ghost" size="sm" onClick={() => setShowDiariaPicker(true)}>
+            <Ic name="photo" size={14} /> <span className={styles.btnLabel}>Diária</span>
           </Btn>
           <Btn variant="primary" size="sm" onClick={() => setShowRecibosPicker(true)}>
             <Ic name="file-text" size={14} /> <span className={styles.btnLabel}>Recibos</span>
@@ -666,6 +671,39 @@ export default function PontoDetalhe({ ponto, employees, settings, isViewer, onB
           settings={settings}
           onClose={() => setShowRecibosPicker(false)}
         />
+      </Modal>
+
+      {/* Diária — day picker modal */}
+      <Modal
+        open={showDiariaPicker}
+        onClose={() => setShowDiariaPicker(false)}
+        title="Gerar Imagem — Diária"
+      >
+        <p style={{ fontSize: 12, color: 'var(--text-dim)', marginBottom: 14 }}>
+          Selecione o dia para gerar a imagem com as diárias dos funcionários.
+        </p>
+        <div className={styles.dayPickerGrid}>
+          {DAY_KEYS.map((key, i) => {
+            const dayDate = ponto.dataInicio ? (() => {
+              const d = new Date(ponto.dataInicio + 'T12:00:00');
+              d.setDate(d.getDate() + i);
+              return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+            })() : null;
+            return (
+              <button
+                key={key}
+                className={styles.dayPickerBtn}
+                onClick={() => {
+                  gerarImagemDiaria(ponto, displayEmployees, key);
+                  setShowDiariaPicker(false);
+                }}
+              >
+                <span className={styles.dayPickerBtnName}>{DAY_SHORT[i]}</span>
+                {dayDate && <span className={styles.dayPickerBtnDate}>{dayDate}</span>}
+              </button>
+            );
+          })}
+        </div>
       </Modal>
     </div>
   );
