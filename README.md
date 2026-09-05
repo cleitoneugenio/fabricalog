@@ -1,88 +1,81 @@
-
-
 # FabricaLog
 
-> Do chão de fábrica para o código — e de volta pro chão de fábrica.
+> Quem entende a operação, constrói a ferramenta certa pra ela.
 
-O ponto de partida eram duas planilhas Excel e uma mesa cheia de papel. Uma controlava a produção semanal da cerâmica — queima, enforna, qualidade, estoque, vendas. A outra controlava o ponto dos 22 funcionários — valor diário, faltas, bônus de assiduidade, total a pagar. Era o sistema. Funcionava. Até que a fábrica cresceu e a planilha começou a mostrar o limite dela.
+O ponto de partida era um controle fragmentado, várias planilhas espalhadas, cada uma cobrindo um pedaço da operação, mais uma mesa cheia de papel. Produção, ponto, carregamento, cada informação num lugar diferente, sem conversar entre si. Funcionava, mas exigia reconciliar tudo na mão pra ter uma visão real do que estava acontecendo na fábrica.
 
-O problema não era o Excel em si. Era que o gerente precisava registrar dados em tempo real no meio do turno, no celular, sem internet estável. Planilha no celular não foi feita pra isso. Você perde campo, fecha sem salvar, não consegue visualizar o que importa quando está no meio da operação.
+As planilhas eram, sim, parte do problema na conciliação de dados, mas um dos grandes problemas também era que não funcionava no ambiente da fábrica. O coordenador precisava registrar dados em tempo real no meio do turno, no celular, sem internet estável, Planilha no celular não foi feita pra isso, Você perde campo, fecha sem salvar, não consegue ver o que importa no meio da operação.
 
-O FabricaLog nasceu dessa restrição. Um aplicativo que roda offline, pesa 5 MB, cabe em qualquer Android de fábrica e cobre todo o ciclo operacional de uma cerâmica: produção semanal, controle de fornos, carregamentos, ponto com remuneração variável automatizada, recibos em PDF e dashboards com exportação para gestão — tudo funcionando sem depender de servidor externo, sincronizando com a nuvem em silêncio quando a conexão aparece.
-
-Problema real com restrição real gera solução real.
+O FabricaLog nasceu dessa restrição. Um aplicativo que roda offline, pesa 5 MB, cabe em qualquer Android de fábrica e cobre todo o ciclo operacional de uma cerâmica, produção semanal, controle de fornos, carregamentos, ponto com remuneração variável automatizada, recibos em PDF e dashboards com exportação pra gestão, tudo funcionando sem depender de servidor externo, sincronizando com a nuvem sozinho quando a conexão aparece.
 
 ---
 
 ## Demo
 
-**Aplicação ao vivo:** [fabricalog.vercel.app](https://fabricalog.vercel.app)
-
-<p align="center">
-  <img src="docs/screenshots/fabricalog-demo.gif" width="320" alt="FabricaLog — demo animada percorrendo dashboard, produção, cargas, ponto, recibos, câmara e planta do forno" />
-</p>
-
-Walkthrough completo em vídeo no [YouTube](https://www.youtube.com/watch?v=jmZqM_GJcZc).
-
----
-
-## Impacto
-
-- Produção que passou de 34 para 51 milheiros/semana por equipe, com 6 pessoas em vez de 9 — dobrando o total do processo de 102 para 204 milheiros/semana
-- Substituição de duas planilhas Excel (produção + ponto) por um único fluxo digital, com registro em tempo real no chão de fábrica, mesmo sem internet estável
-- Em produção desde maio de 2026
+[![FabricaLog — Demo](https://img.youtube.com/vi/jmZqM_GJcZc/maxresdefault.jpg)](https://www.youtube.com/watch?v=jmZqM_GJcZc)
 
 ---
 
 ## Funcionalidades
 
 ### Semanas de Produção
+
 - Registro diário por semana: queima, enfornas, qualidade, vendas, estoque, galpão, ocorrências
 - Meta de fornos por semana com barra de progresso
 - Auto-preenchimento de vendas/estoque a partir dos carregamentos registrados
 - Exportação da semana em planilha `.xlsx`
 
 ### Controle de Ponto
+
 - Tabela semanal com valores diários por funcionário
 - Cálculo automático de dias trabalhados, bônus (R$ 25 para 6 dias) e total
 - Bônus bloqueável individualmente pelo gestor
 - Exportação em relatório `.html` com layout visual completo
 
 ### Carregamentos
+
 - Registro de carregamentos por data: caminhão próprio ou externo
 - Destino por carregamento: venda, estoque ou galpão
 - Resumo diário com totais por destino
 
 ### Dashboard
+
 - Visão geral da semana ativa: fornos, vendas, estoque
 - Gráfico de barras semanal (vendas × estoque)
 
 ### Módulos Adicionais
-- **Câmara** — controle de câmara de secagem
-- **Forno** — planta visual dos fornos com status em tempo real
-- **Equipe** — cadastro e gerenciamento de funcionários
-- **Recibos** — geração de recibos individuais em PDF
+
+- **Câmara**: controle de câmara de secagem
+- **Forno**: planta visual dos fornos com status em tempo real
+- **Equipe**: cadastro e gerenciamento de funcionários
+- **Recibos**: geração de recibos individuais em PDF
 
 ### Sincronização
+
 - Persistência local offline-first via `localStorage`
 - Sincronização em nuvem com Supabase (autenticação + PostgreSQL)
-- Merge automático por `updatedAt` — sem conflito entre dispositivos
+- Merge automático por `updatedAt`, sem conflito entre dispositivos
 - Backup automático diário exportado localmente
+
+---
+
+## Impacto
+
+Em uso diário na operação da cerâmica desde maio de 2026. O que mudou foi acabar com a fragmentação, controles que viviam em planilhas soltas e papel viraram uma fonte só, com produção, ponto, fornos e carregamentos sincronizados entre os dispositivos. O coordenador ganhou decisão em tempo real dentro do próprio chão de fábrica, registra e consulta no celular, no meio do turno, sem depender de internet estável, coisa que a planilha nunca resolveu direito. A calculadora de câmara acabou com o achismo no cálculo de tijolos retirados do forno, antes era estimado, agora sai exato. E o trabalho manual de montar recibo, relatório e exportação caiu, porque o sistema gera tudo sozinho.
 
 ---
 
 ## Stack
 
-| Camada | Tecnologia |
-|--------|-----------|
-| Frontend | React 19 + Vite 8 |
-| Estilo | CSS Modules + oklch color space |
-| Mobile | Capacitor 8 (Android) |
-| PWA | vite-plugin-pwa |
-| Banco local | localStorage com debounce |
-| Banco nuvem | Supabase (PostgreSQL + Auth) |
-| Exportação | SheetJS (xlsx), HTML, jsPDF |
-| Testes | Vitest (lógica de ponto, bônus, sincronização e backup) |
+| Camada      | Tecnologia                      |
+| ----------- | -------------------------------- |
+| Frontend    | React 19 + Vite 8               |
+| Estilo      | CSS Modules + oklch color space |
+| Mobile      | Capacitor 8 (Android)           |
+| PWA         | vite-plugin-pwa                 |
+| Banco local | localStorage com debounce       |
+| Banco nuvem | Supabase (PostgreSQL + Auth)    |
+| Exportação  | SheetJS (xlsx), HTML, jsPDF     |
 
 ---
 
@@ -112,6 +105,7 @@ src/
 ## Instalação e Desenvolvimento
 
 ### Pré-requisitos
+
 - Node.js 18+
 - Android Studio (para build Android)
 
@@ -125,10 +119,11 @@ npm install
 
 ### Variáveis de ambiente
 
-Copie `.env.example` para `.env` e preencha com as credenciais do seu projeto Supabase:
+Crie um arquivo `.env` na raiz:
 
-```bash
-cp .env.example .env
+```env
+VITE_SUPABASE_URL=https://xxxx.supabase.co
+VITE_SUPABASE_ANON_KEY=xxxx
 ```
 
 ### Rodando em desenvolvimento
@@ -142,14 +137,6 @@ Para testar no celular pela rede local (HTTPS):
 ```bash
 npm run dev:mobile
 ```
-
-### Testes
-
-```bash
-npm test
-```
-
-Cobrem a lógica pura em `src/utils/` — cálculo de ponto e bônus (`calcPonto`), merge de sincronização por `updatedAt` (`syncMerge`) e integridade de backup (`backup`).
 
 ---
 
@@ -182,7 +169,7 @@ android/app/build/outputs/apk/release/app-release.apk
 
 ---
 
-## Banco de Dados — Supabase
+## Banco de Dados (Supabase)
 
 O schema utiliza uma única tabela `app_data` com todos os dados do usuário em colunas JSONB:
 
@@ -207,25 +194,6 @@ CREATE POLICY "users_own_data" ON app_data
 
 ---
 
-## Sobre este projeto
-
-Este é um dos produtos que documento publicamente na minha transição
-de carreira de operações para dados e tecnologia.
-
-- Portfólio: [cleiton-dados.vercel.app](https://cleiton-dados.vercel.app)
-- LinkedIn: [cleiton-eugenio-dados](https://www.linkedin.com/in/cleiton-eugenio-dados/)
-<!-- TODO: adicionar link do Medium
-- Artigos no Medium: https://medium.com/@<perfil>
--->
-
----
-
-## Licença
-
-Ver [LICENSE.md](./LICENSE.md).
-
----
-
 ## Versão
 
-`v1.2.0` — Maio 2026
+`v1.2.0`, Maio 2026
