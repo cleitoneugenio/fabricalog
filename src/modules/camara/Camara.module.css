@@ -65,7 +65,7 @@
 .inputCard {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-lg);
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
@@ -90,7 +90,7 @@
   flex: 1;
   background: var(--bg-input, oklch(14% 0.016 38));
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
   color: var(--text);
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
   font-size: 28px;
@@ -128,7 +128,7 @@
 .errorCard {
   background: oklch(63% 0.21 22 / 0.12);
   border: 1px solid oklch(63% 0.21 22 / 0.3);
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
   padding: 12px 16px;
   font-size: 13px;
   font-weight: 600;
@@ -138,7 +138,7 @@
 .warnCard {
   background: oklch(76% 0.17 68 / 0.10);
   border: 1px solid oklch(76% 0.17 68 / 0.25);
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
   padding: 12px 16px;
   font-size: 13px;
   font-weight: 600;
@@ -149,7 +149,7 @@
 .resultCard {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-lg);
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
@@ -264,7 +264,7 @@
 .infoCard {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-lg);
   padding: 20px 24px;
 }
 

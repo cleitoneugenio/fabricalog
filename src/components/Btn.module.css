@@ -4,7 +4,7 @@
   gap: 6px;
   font-family: var(--font);
   font-weight: 700;
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
   transition: opacity 0.15s, background 0.15s, transform 0.1s;
   white-space: nowrap;
   border: none;
@@ -23,7 +23,7 @@
 .sm {
   padding: 6px 12px;
   font-size: 12px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
 }
 
 .md {

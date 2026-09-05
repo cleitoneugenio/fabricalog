@@ -23,7 +23,7 @@
 .arrow {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   color: var(--text-dim);
   width: 32px;
   height: 32px;

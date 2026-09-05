@@ -14,7 +14,7 @@
 .panel {
   background: var(--bg-card);
   border: 1px solid var(--border-mid);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-lg);
   width: 100%;
   max-width: 440px;
   max-height: calc(100dvh - 48px);
@@ -44,7 +44,7 @@
   color: var(--text-dim);
   cursor: pointer;
   padding: 4px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   display: flex;
   align-items: center;
   transition: color 0.15s;

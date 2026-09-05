@@ -32,7 +32,7 @@
   gap: 0;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
   overflow: hidden;
   min-width: 0;
 }
@@ -60,7 +60,7 @@
 }
 
 .summaryLabel {
-  font-size: 8px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--text-dim);
   text-transform: uppercase;
@@ -106,7 +106,7 @@
 .svgWrap {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-lg);
   overflow: hidden;
 }
 
@@ -114,7 +114,7 @@
 .panel {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--r-lg);
   padding: 16px;
   transition: opacity 0.15s, transform 0.15s;
 }
@@ -179,7 +179,7 @@
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
   border: 1.5px solid var(--s-border, var(--border));
   background: var(--s-bg, transparent);
   cursor: pointer;
@@ -227,7 +227,7 @@
 .descargaLabel {
   font-size: 10px;
   font-weight: 700;
-  color: #4A9ECC;
+  color: var(--forno-descarregando-text);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -240,9 +240,9 @@
 
 .descargaInput {
   flex: 1;
-  background: oklch(15% 0.016 38);
-  border: 1px solid #4A9ECC;
-  border-radius: var(--radius-sm);
+  background: var(--forno-descarregando-bg);
+  border: 1px solid var(--forno-descarregando-text);
+  border-radius: var(--r-sm);
   color: var(--text);
   padding: 8px 10px;
   font-size: 18px;
@@ -254,7 +254,7 @@
 
 .descargaInput:focus {
   outline: none;
-  border-color: #6AB8E8;
+  border-color: var(--forno-descarregando-focus);
 }
 
 .descargaUnit {
@@ -266,7 +266,7 @@
 .concluirBtn {
   width: 100%;
   padding: 9px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   background: oklch(45% 0.14 148 / 0.2);
   border: 1px solid var(--success);
   color: var(--success);

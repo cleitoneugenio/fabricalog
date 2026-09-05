@@ -1,0 +1,44 @@
+.toggle {
+  display: flex;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  padding: 3px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.toggle.fullWidth {
+  width: 100%;
+}
+
+.btn {
+  padding: 5px 14px;
+  border-radius: var(--r-full);
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  color: var(--text-muted);
+  background: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.btn:hover {
+  color: var(--text);
+}
+
+.toggle.fullWidth .btn {
+  flex: 1;
+  max-width: none;
+}
+
+.btnActive {
+  background: var(--accent);
+  color: oklch(10% 0.014 38);
+}

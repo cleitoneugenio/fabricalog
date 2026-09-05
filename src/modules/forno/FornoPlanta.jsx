@@ -3,10 +3,10 @@ import Btn from '../../components/Btn';
 import styles from './FornoPlanta.module.css';
 
 const STATUS_CONFIG = {
-  vazio:          { label: 'Vazio',          fill: '#1E1714', border: '#2E2420', text: '#4A3830', dotColor: '#2E2420' },
-  carregado:      { label: 'Carregado',      fill: '#2E200C', border: '#C9A83C', text: '#C9A83C', dotColor: '#C9A83C' },
-  queimando:      { label: 'Queimando',      fill: '#2E1210', border: '#C25040', text: '#C25040', dotColor: '#C25040' },
-  descarregando:  { label: 'Descarregando',  fill: '#0E1E2A', border: '#4A9ECC', text: '#4A9ECC', dotColor: '#4A9ECC' },
+  vazio:         { label: 'Vazio',         fill: 'var(--forno-vazio-bg)',         border: 'var(--forno-vazio-border)',       text: 'var(--forno-vazio-text)',        dotColor: 'var(--forno-vazio-border)'       },
+  carregado:     { label: 'Carregado',     fill: 'var(--forno-carregado-bg)',     border: 'var(--forno-carregado-text)',     text: 'var(--forno-carregado-text)',    dotColor: 'var(--forno-carregado-text)'     },
+  queimando:     { label: 'Queimando',     fill: 'var(--forno-queimando-bg)',     border: 'var(--forno-queimando-text)',     text: 'var(--forno-queimando-text)',    dotColor: 'var(--forno-queimando-text)'     },
+  descarregando: { label: 'Descarregando', fill: 'var(--forno-descarregando-bg)', border: 'var(--forno-descarregando-text)', text: 'var(--forno-descarregando-text)', dotColor: 'var(--forno-descarregando-text)' },
 };
 
 const STATUS_ICONS = {
@@ -80,10 +80,10 @@ function SummaryBar({ chambers }) {
   }, {});
 
   const items = [
-    { key: 'vazio',         label: 'Vazias',        color: '#4A3830' },
-    { key: 'carregado',     label: 'Carregadas',     color: '#C9A83C' },
-    { key: 'queimando',     label: 'Queimando',      color: '#C25040' },
-    { key: 'descarregando', label: 'Descarregando',  color: '#4A9ECC' },
+    { key: 'vazio',         label: 'Vazias',        color: 'var(--forno-vazio-text)'        },
+    { key: 'carregado',     label: 'Carregadas',    color: 'var(--forno-carregado-text)'    },
+    { key: 'queimando',     label: 'Queimando',     color: 'var(--forno-queimando-text)'    },
+    { key: 'descarregando', label: 'Descarregando', color: 'var(--forno-descarregando-text)' },
   ];
 
   return (
@@ -130,7 +130,7 @@ export default function FornoPlanta({ chambers, onSetStatus, onSetRestante, onCo
             <defs>
               <marker id="hArrow" viewBox="0 0 10 10" refX="8" refY="5"
                 markerWidth={5} markerHeight={5} orient="auto">
-                <path d="M2 1L8 5L2 9" fill="none" stroke="#C25040" strokeWidth={1.5}/>
+                <path d="M2 1L8 5L2 9" fill="none" stroke="var(--forno-queimando-text)" strokeWidth={1.5}/>
               </marker>
             </defs>
 
@@ -169,7 +169,7 @@ export default function FornoPlanta({ chambers, onSetStatus, onSetRestante, onCo
               const y = START_Y + i * STEP + CHAMBER_H / 2;
               return (
                 <line key={i} x1={232} y1={y} x2={268} y2={y}
-                  stroke="#C25040" strokeWidth={0.6}
+                  stroke="var(--forno-queimando-text)" strokeWidth={0.6}
                   strokeDasharray="3 2" markerEnd="url(#hArrow)" opacity={0.5}/>
               );
             })}
