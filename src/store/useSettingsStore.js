@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { storage } from './storage';
 
 const DEFAULTS = {
-  empresa:  '***REMOVED***',
-  cnpj:     '***REMOVED***',
-  endereco: '***REMOVED***',
-  cidade:   '***REMOVED***',
+  empresa:  'Cerâmica Demonstração Ltda',
+  cnpj:     '00.000.000/0001-00',
+  endereco: 'Rua Exemplo, 100 - Zona Rural',
+  cidade:   'Cidade Exemplo',
 };
 
 export function useSettingsStore() {
